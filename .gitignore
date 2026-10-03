@@ -1,0 +1,15 @@
+# Dependencies / build
+node_modules/
+dist/
+build/
+.venv/
+venv/
+__pycache__/
+
+# Secrets (NN#3)
+.env
+.env.*
+!.env.example
+
+# OS / editor
+.DS_Store

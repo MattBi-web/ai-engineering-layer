@@ -1,0 +1,42 @@
+# Cordone 1 — pre-commit. Copia (o symlink) nella root del repo target come .pre-commit-config.yaml
+# e lancia:  pre-commit install
+# I check leggono il diff vs origin/main; per il pre-commit passano i file staged come argomenti.
+repos:
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.21.2
+    hooks:
+      - id: gitleaks  # NN#3 (scan profondo dei secrets)
+
+  - repo: local
+    hooks:
+      - id: rls-check
+        name: "NN#1 — RLS su ogni tabella"
+        entry: enforcement/scripts/check-rls.sh
+        language: script
+        files: \.sql$
+      - id: rate-limit-check
+        name: "NN#2 — rate limit su endpoint pubblici"
+        entry: enforcement/scripts/check-rate-limit.sh
+        language: script
+        files: \.py$
+      - id: env-tracked-check
+        name: "NN#3 — nessun .env/secret tracciato"
+        entry: enforcement/scripts/check-env-tracked.sh
+        language: script
+        pass_filenames: true
+      - id: forbid-any
+        name: "Type safety — vietato any (TS)"
+        entry: enforcement/scripts/forbid-any.sh
+        language: script
+        files: \.tsx?$
+      - id: test-present
+        name: "Companion test sui nuovi sorgenti"
+        entry: enforcement/scripts/check-test-present.sh
+        language: script
+        pass_filenames: false
+      - id: verify-deps
+        name: "Package hallucination — dipendenze esistenti"
+        entry: enforcement/scripts/verify-dependencies.sh
+        language: script
+        files: (requirements\.txt|package\.json|pyproject\.toml)$
+        pass_filenames: false

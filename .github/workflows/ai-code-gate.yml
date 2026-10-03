@@ -1,0 +1,73 @@
+# Cordone 3b — CI stratificata: attiva i check in base ai layer dichiarati nel corpo della PR.
+name: AI Code Gate
+on:
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  detect:
+    runs-on: ubuntu-latest
+    outputs:
+      layers: ${{ steps.parse.outputs.layers }}
+      tier: ${{ steps.parse.outputs.tier }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: parse
+        env: { PR_BODY: ${{ github.event.pull_request.body }} }
+        run: |
+          printf '%s' "$PR_BODY" > /tmp/pr_body.md
+          layers=$(bash enforcement/scripts/detect-layers.sh /tmp/pr_body.md | grep '^layer=' | cut -d= -f2 | paste -sd, -)
+          tier=$(bash enforcement/scripts/detect-layers.sh /tmp/pr_body.md | grep '^tier=' | cut -d= -f2)
+          echo "layers=$layers" >> "$GITHUB_OUTPUT"
+          echo "tier=${tier:-standard}" >> "$GITHUB_OUTPUT"
+          echo "Layer dichiarati: $layers — tier: ${tier:-standard}"
+
+  type-safety:
+    needs: detect
+    if: contains(needs.detect.outputs.layers, 'L1') || contains(needs.detect.outputs.layers, 'L2')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - run: bash enforcement/scripts/forbid-any.sh
+
+  data-layer:
+    needs: detect
+    if: contains(needs.detect.outputs.layers, 'L3')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - run: bash enforcement/scripts/check-rls.sh
+
+  reliability:
+    needs: detect
+    if: contains(needs.detect.outputs.layers, 'L6')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - run: bash enforcement/scripts/check-rate-limit.sh
+
+  tests-present:
+    needs: detect
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - run: bash enforcement/scripts/check-test-present.sh
+
+  critical-gate:
+    needs: detect
+    if: needs.detect.outputs.tier == 'critical'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Tier critical → richiede ≥2 review approvate
+        env: { GH_TOKEN: ${{ secrets.GITHUB_TOKEN }} }
+        run: |
+          approvals=$(gh pr view ${{ github.event.pull_request.number }} --json reviews \
+            --jq '[.reviews[] | select(.state=="APPROVED")] | length' -R ${{ github.repository }})
+          echo "Approvazioni: $approvals"
+          if [ "${approvals:-0}" -lt 2 ]; then
+            echo "⛔ PR critical: servono almeno 2 review approvate."; exit 1
+          fi

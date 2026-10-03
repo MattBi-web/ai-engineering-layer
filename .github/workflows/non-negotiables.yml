@@ -1,0 +1,34 @@
+# Cordone 3a — CI sempre attiva: le 3 Non-Negotiables bloccano il merge.
+name: Non-Negotiables
+on:
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  nn1-rls:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - name: NN#1 — RLS su ogni tabella
+        run: bash enforcement/scripts/check-rls.sh
+
+  nn2-rate-limit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - name: NN#2 — rate limit su endpoint pubblici
+        run: bash enforcement/scripts/check-rate-limit.sh
+
+  nn3-secrets:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - name: NN#3 — secrets non versionati
+        run: bash enforcement/scripts/check-env-tracked.sh
+      - name: gitleaks (scan profondo)
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

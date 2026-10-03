@@ -1,0 +1,45 @@
+# Loop di miglioramento continuo — audit mensile del framework.
+name: Monthly Engineering Audit
+on:
+  schedule:
+    - cron: "17 6 1 * *"   # 1° del mese, 06:17 UTC (minuto off per non accavallarsi col resto della flotta)
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Analizza le PR dell'ultimo mese
+        env: { GH_TOKEN: ${{ secrets.GITHUB_TOKEN }} }
+        run: |
+          since=$(date -u -d '1 month ago' +%Y-%m-%d 2>/dev/null || date -u -v-1m +%Y-%m-%d)
+          echo "# 📊 Engineering Audit — $(date -u +%Y-%m-%d)" > report.md
+          echo "PR mergiate dal $since" >> report.md; echo >> report.md
+          prs=$(gh pr list --state merged --search "merged:>=$since" --limit 200 \
+                --json number,title,body,reviewDecision 2>/dev/null || echo '[]')
+          total=$(echo "$prs" | jq 'length')
+          with_layer=$(echo "$prs" | jq '[.[] | select(.body|test("\\[x\\] \\*\\*L[0-9]";"i"))] | length')
+          echo "- PR totali: **$total**" >> report.md
+          echo "- PR che dichiarano almeno un layer: **$with_layer**" >> report.md
+          if [ "${total:-0}" -gt 0 ]; then
+            echo "- Layer ticking rate: **$(( with_layer * 100 / total ))%**" >> report.md
+          fi
+          echo >> report.md
+          echo "## Layer dichiarati nel mese" >> report.md
+          echo "$prs" | jq -r '.[].body' | grep -ioE '\[x\] \*\*L[0-9]+' | grep -ioE 'L[0-9]+' \
+            | sort | uniq -c | sort -rn | sed 's/^/    /' >> report.md || true
+          echo >> report.md
+          echo "## ⚠️ Layer MAI dichiarati (possibili punti ciechi)" >> report.md
+          declared=$(echo "$prs" | jq -r '.[].body' | grep -ioE 'L[0-9]+' | sort -u)
+          for l in L0 L1 L2 L3 L4 L5 L6 L7 L8 L9 L10 L11; do
+            echo "$declared" | grep -qx "$l" || echo "    - $l mai dichiarato" >> report.md
+          done
+          cat report.md
+      - name: Apri issue di tracking
+        env: { GH_TOKEN: ${{ secrets.GITHUB_TOKEN }} }
+        run: gh issue create --title "📊 Engineering Audit — $(date -u +%Y-%m)" --body-file report.md --label audit || true
