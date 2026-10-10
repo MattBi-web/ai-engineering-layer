@@ -5,7 +5,7 @@ argument-hint: (opzionale) target branch, default main
 
 Prepara la Pull Request per le modifiche correnti. Target: **${ARGUMENTS:-main}**.
 
-> Questo è il **gate org** (3 Non-Negotiables + dichiarazione layer + compilazione template), NON la code
+> Questo è il **gate di merge** (3 Non-Negotiables + dichiarazione layer + compilazione template), NON la code
 > review: per la review usa `/review` di agent-skills (fan-out code-reviewer/security-auditor/test-engineer).
 
 ### 1. Raccogli il diff

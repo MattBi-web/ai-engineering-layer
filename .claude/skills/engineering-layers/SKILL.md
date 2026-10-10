@@ -5,7 +5,7 @@ description: Per-layer production-readiness checklists for the AI Engineering La
 
 # Engineering Layers — progressive checklists
 
-> Questa skill è la **asticella di production-readiness org** (cosa deve essere vero), complementare alle
+> Questa skill è la **asticella di production-readiness** (cosa deve essere vero), complementare alle
 > skill di *processo* di agent-skills (come si lavora). Le 3 Non-Negotiables sono enforced in `enforcement/`.
 
 Production is an iceberg: code is the tip. A change DECLARES which layers it touches; load the

@@ -17,7 +17,7 @@ CLAUDE.md                       # shim Claude Code: aggancia il delta al ciclo a
 .claude/
   skills/engineering-layers/    # 12 Production Layers a progressive disclosure (carica solo il layer toccato)
   commands/
-    pr-prep.md                  # gate org (3 NN + layer + template) — la review è /review di agent-skills
+    pr-prep.md                  # gate di merge (3 NN + layer + template) — la review è /review di agent-skills
     audit.md                    # /audit (gap vs 12 layer, usa il grafo)
 .github/PULL_REQUEST_TEMPLATE.md# PR template stratificato per layer + tier + check AI-specifici
 enforcement/                    # 3 cordoni: pre-commit + Claude hooks + CI (script su stack FastAPI/Supabase)

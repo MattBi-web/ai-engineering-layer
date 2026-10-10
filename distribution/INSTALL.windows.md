@@ -7,7 +7,7 @@ Versione ad hoc della guida d'installazione per utenti Windows. Stesso prodotto,
 | | **Opzione A — WSL2 (Ubuntu)** *consigliata* | **Opzione B — Windows nativo** |
 |---|---|---|
 | Setup | una tantum: installi WSL2 Ubuntu | nessuno, sei già pronto |
-| Coerenza con i colleghi Mac/Linux | ✅ identica | parziale |
+| Coerenza con gli utenti Mac/Linux | ✅ identica | parziale |
 | `install.sh` (uno script unico) | ✅ funziona così com'è | ⚠️ serve la versione `.ps1` |
 | Claude Code hook (`block-destructive-bash`, ecc.) | ✅ | ⚠️ disabilitati senza Git Bash/WSL |
 | `pre-commit` hooks del repo target | ✅ | ⚠️ servono `bash`/`sh` (Git Bash basta) |

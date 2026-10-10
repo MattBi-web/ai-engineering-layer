@@ -10,7 +10,7 @@ introdotto tre debiti silenziosi: **token sprecati** (l'agente legge file alla c
 introduce OWASP Top-10* — RLS scordate, rate limit assenti, secrets hardcoded). L'**AI Engineering Layer**
 è una composizione di tre strati — *retrieval+memoria, processo, enforcement* — che indurisce il loop di
 sviluppo *senza* obbligare a nuovi tool: si poggia su Claude Code e su un plugin community ben mantenuto
-([`addyosmani/agent-skills`](https://github.com/addyosmani/agent-skills)) e aggiunge solo il **delta org**
+([`addyosmani/agent-skills`](https://github.com/addyosmani/agent-skills)) e aggiunge solo il **delta**
 che nessuno standard copre: un *bootstrap di contesto* su knowledge-graph del codice, e tre **guardrail
 deterministici** (`pre-commit + hooks + CI`) che rifiutano merge senza RLS, senza rate-limit e con secrets
 in chiaro.
@@ -37,7 +37,7 @@ deterministico (pre-commit, hook, CI) = un agente che produce codice production-
 |---|---|---|
 | **1. Infra (retrieval + memoria)** | MCP `codebase-memory` (graph del codice, Cypher), MCP `obsidian` (memoria a lungo termine), model routing `opusplan`, regola *graph-first* in `CLAUDE.md` | **Sempre**. Dimenticatelo, lavora in background. |
 | **2. Processo** | `agent-skills` di Addy Osmani: 28 skill + `/spec /plan /build /test /review /ship`, review in fan-out parallelo (code-reviewer + security-auditor + test-engineer) | **Quando lavori su codice** (non in chat generiche). |
-| **3. Enforcement** | 3 cordoni: **pre-commit** (gitleaks + script org) → **hook Claude Code** (blocco bash distruttivo, stop su test rossi) → **CI** (`non-negotiables.yml` + `ai-code-gate.yml` stratificato per layer) | **Per repo target** in cui si committa codice prodotto. |
+| **3. Enforcement** | 3 cordoni: **pre-commit** (gitleaks + script custom) → **hook Claude Code** (blocco bash distruttivo, stop su test rossi) → **CI** (`non-negotiables.yml` + `ai-code-gate.yml` stratificato per layer) | **Per repo target** in cui si committa codice prodotto. |
 
 ## Le 3 Non-Negotiables
 Sono i fallimenti più comuni e più costosi del codice AI-generato (Lovable e simili). Il framework li
