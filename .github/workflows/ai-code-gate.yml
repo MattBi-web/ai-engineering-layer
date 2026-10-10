@@ -1,4 +1,4 @@
-# Cordone 3b — CI stratificata: attiva i check in base ai layer dichiarati nel corpo della PR.
+# Line 3b — layered CI: enables checks based on the layers declared in the PR body.
 name: AI Code Gate
 on:
   pull_request:
@@ -13,14 +13,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - id: parse
-        env: { PR_BODY: ${{ github.event.pull_request.body }} }
+        env: { PR_BODY: '${{ github.event.pull_request.body }}' }
         run: |
           printf '%s' "$PR_BODY" > /tmp/pr_body.md
           layers=$(bash enforcement/scripts/detect-layers.sh /tmp/pr_body.md | grep '^layer=' | cut -d= -f2 | paste -sd, -)
           tier=$(bash enforcement/scripts/detect-layers.sh /tmp/pr_body.md | grep '^tier=' | cut -d= -f2)
           echo "layers=$layers" >> "$GITHUB_OUTPUT"
           echo "tier=${tier:-standard}" >> "$GITHUB_OUTPUT"
-          echo "Layer dichiarati: $layers — tier: ${tier:-standard}"
+          echo "Declared layers: $layers — tier: ${tier:-standard}"
 
   type-safety:
     needs: detect
@@ -62,12 +62,12 @@ jobs:
     if: needs.detect.outputs.tier == 'critical'
     runs-on: ubuntu-latest
     steps:
-      - name: Tier critical → richiede ≥2 review approvate
-        env: { GH_TOKEN: ${{ secrets.GITHUB_TOKEN }} }
+      - name: Critical tier → requires ≥2 approved reviews
+        env: { GH_TOKEN: '${{ secrets.GITHUB_TOKEN }}' }
         run: |
           approvals=$(gh pr view ${{ github.event.pull_request.number }} --json reviews \
             --jq '[.reviews[] | select(.state=="APPROVED")] | length' -R ${{ github.repository }})
-          echo "Approvazioni: $approvals"
+          echo "Approvals: $approvals"
           if [ "${approvals:-0}" -lt 2 ]; then
-            echo "⛔ PR critical: servono almeno 2 review approvate."; exit 1
+            echo "⛔ Critical PR: at least 2 approved reviews are required."; exit 1
           fi

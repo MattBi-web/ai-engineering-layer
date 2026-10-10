@@ -1,5 +1,5 @@
 {
-  "_comment": "Cordone 2 — Claude Code hooks. MERGE questo dentro il .claude/settings.json del repo target (PROGETTO, non ~/.claude). NON sovrascrivere settings esistenti: aggiungi solo la chiave 'hooks'. ${CLAUDE_PROJECT_DIR} punta alla root del repo.",
+  "_comment": "Line 2 — Claude Code hooks. MERGE this into the target repo's .claude/settings.json (PROJECT, not ~/.claude). Do NOT overwrite existing settings: add only the 'hooks' key. ${CLAUDE_PROJECT_DIR} points to the repo root.",
   "hooks": {
     "PreToolUse": [
       {

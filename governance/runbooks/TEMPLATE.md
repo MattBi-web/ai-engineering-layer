@@ -1,29 +1,29 @@
-# Runbook — <nome servizio>
+# Runbook — <service name>
 
-- **Owner / on-call:** <team / rotazione>
-- **Repo / deploy:** <link>  · **Dashboard:** <link>  · **Alert channel:** <#canale>
+- **Owner / on-call:** <owner / rotation>
+- **Repo / deploy:** <link>  · **Dashboard:** <link>  · **Alert channel:** <#channel>
 
-## Cosa fa
-Una descrizione in 2-3 righe. Dipendenze a monte/valle.
+## What it does
+A 2-3 line description. Upstream/downstream dependencies.
 
 ## Health & SLO (L8)
 - Health check: `GET /health` → 200
-- SLO: es. 99.9% disponibilità, p95 latency < 300ms, error rate < 0.5%
-- 4 Golden Signals: dove leggerli (latency / traffic / errors / saturation)
+- SLO: e.g. 99.9% availability, p95 latency < 300ms, error rate < 0.5%
+- 4 Golden Signals: where to read them (latency / traffic / errors / saturation)
 
-## Risposta agli alert
-| Alert | Probabile causa | Prima azione | Escalation |
+## Alert response
+| Alert | Likely cause | First action | Escalation |
 |---|---|---|---|
-| Error budget burn | … | controlla dashboard X | @owner dopo 15' |
-| Latency p95 alta | … | verifica DB/queue | … |
+| Error budget burn | … | check dashboard X | @owner after 15' |
+| High p95 latency | … | check DB/queue | … |
 
 ## Deploy & Rollback (L9)
-- Deploy: <comando / pipeline>
-- Rollback: <comando / procedura> — RTO target: <…>
-- Feature flag rilevanti: <…>
+- Deploy: <command / pipeline>
+- Rollback: <command / procedure> — target RTO: <…>
+- Relevant feature flags: <…>
 
-## Incidenti comuni
-- **Sintomo →** diagnosi → fix passo-passo.
+## Common incidents
+- **Symptom →** diagnosis → step-by-step fix.
 
 ## Escalation
-SEV1/SEV2/SEV3: chi chiamare, entro quanto. Link al template postmortem.
+SEV1/SEV2/SEV3: who to call, and within how long. Link to the postmortem template.

@@ -1,21 +1,21 @@
 # L0 — Governance (cross-cutting)
 
-**Scopo:** ogni cambiamento ha un proprietario, una motivazione tracciata e un livello di rigore proporzionato.
+**Purpose:** every change has an owner, a tracked rationale and a proportionate level of rigor.
 
-**Decisioni di default:** ownership via `CODEOWNERS`. Decisioni architetturali in ADR. Glossario di
-dominio condiviso. Ogni PR dichiara un **tier**.
+**Default decisions:** ownership via `CODEOWNERS`. Architecture decisions in ADRs. Shared domain
+glossary. Every PR declares a **tier**.
 
-**Tier (il rigore scala col rischio):**
-- **cosmetic** — UI/copy/stile: flusso standard, review leggera.
-- **standard** — feature/bugfix normali: protocollo a 5 step completo.
-- **critical** — auth, payment, PII, migrazioni: review umana obbligatoria (≥2 approvazioni) + security scan.
+**Tier (rigor scales with risk):**
+- **cosmetic** — UI/copy/style: standard flow, light review.
+- **standard** — regular features/bugfixes: full 5-step protocol.
+- **critical** — auth, payment, PII, migrations: mandatory human review (≥2 approvals) + security scan.
 
 **Checklist:**
-- [ ] Tier dichiarato nella PR; se critical, reviewer umano assegnato.
-- [ ] Path coperto da `CODEOWNERS`.
-- [ ] Decisione non banale → ADR creato/aggiornato (`governance/ADR/`).
-- [ ] Termini di dominio nuovi → glossario aggiornato.
+- [ ] Tier declared in the PR; if critical, human reviewer assigned.
+- [ ] Path covered by `CODEOWNERS`.
+- [ ] Non-trivial decision → ADR created/updated (`governance/ADR/`).
+- [ ] New domain terms → glossary updated.
 
-**Non-Negotiable:** nessuna.
+**Non-Negotiable:** none.
 
-**Stop condition:** se non è chiaro il tier o manca un owner per il path toccato, fermati e chiedi.
+**Stop condition:** if the tier is unclear or the touched path has no owner, stop and ask.

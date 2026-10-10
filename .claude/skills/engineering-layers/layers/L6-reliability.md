@@ -1,20 +1,20 @@
 # L6 — Reliability
 
-**Scopo:** il sistema regge carico, errori e dipendenze esterne lente/giù senza cascate.
+**Purpose:** the system withstands load, errors and slow/down external dependencies without cascading failures.
 
-**Decisioni di default:** rate-limit middleware su ogni endpoint pubblico, configurato all'inizio.
-Operazioni di scrittura idempotenti. Retry con backoff + jitter sulle chiamate esterne. Circuit
-breaker sulle dipendenze. Code asincrone con dead-letter queue.
+**Default decisions:** rate-limit middleware on every public endpoint, configured from the start.
+Idempotent write operations. Retry with backoff + jitter on external calls. Circuit
+breakers on dependencies. Async queues with a dead-letter queue.
 
 **Checklist:**
-- [ ] **NN#2**: ogni endpoint pubblico ha rate limiting (per utente/IP/chiave), non aggiunto "dopo".
-- [ ] Operazioni mutanti idempotenti (idempotency key dove serve) → retry sicuri.
-- [ ] Chiamate esterne (HTTP/DB/queue) con timeout + retry/backoff espliciti, mai illimitati.
-- [ ] Circuit breaker / fallback sulle dipendenze critiche; stato d'errore user-friendly.
-- [ ] Lavoro async: coda con DLQ; messaggi processati at-least-once + idempotenza.
-- [ ] Decisione sync vs async motivata.
+- [ ] **NN#2**: every public endpoint has rate limiting (per user/IP/key), not added "later".
+- [ ] Idempotent mutating operations (idempotency key where needed) → safe retries.
+- [ ] External calls (HTTP/DB/queue) with explicit timeouts + retry/backoff, never unbounded.
+- [ ] Circuit breaker / fallback on critical dependencies; user-friendly error state.
+- [ ] Async work: queue with DLQ; messages processed at-least-once + idempotency.
+- [ ] Sync vs async decision justified.
 
-**Non-Negotiable:** NN#2 — rate limit su ogni endpoint pubblico.
+**Non-Negotiable:** NN#2 — rate limit on every public endpoint.
 
-**Stop condition:** se non è chiaro il limite di rate appropriato o la semantica di idempotenza,
-fermati e chiedi requisiti (QPS atteso, costo di un doppione).
+**Stop condition:** if the appropriate rate limit or the idempotency semantics are unclear,
+stop and ask for requirements (expected QPS, cost of a duplicate).

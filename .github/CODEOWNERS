@@ -1,16 +1,16 @@
-# CODEOWNERS (L0) — ownership obbligatoria. I path critici richiedono review dedicata.
-# Sostituisci @org/team con i tuoi owner reali. Abbina con branch protection (required reviews).
+# CODEOWNERS (L0) — mandatory ownership. Critical paths require a dedicated review.
+# Replace @org/team with your real owners. Pair with branch protection (required reviews).
 
 # Default
 *                           @org/maintainers
 
-# Layer di governance / framework
+# Governance / framework layer
 /AGENTS.md                  @org/architects
 /CLAUDE.md                  @org/architects
 /.claude/                   @org/architects
 /enforcement/               @org/platform
 
-# Path CRITICAL → richiedono ≥2 review (configura in branch protection)
+# CRITICAL paths → require ≥2 reviews (configure in branch protection)
 /backend/**/auth/**         @org/security @org/architects
 /backend/**/payment/**      @org/security @org/architects
 /migrations/**              @org/data @org/security

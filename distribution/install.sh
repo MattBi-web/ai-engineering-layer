@@ -1,23 +1,23 @@
 #!/usr/bin/env bash
-# AI Engineering Layer — installer one-liner.
+# AI Engineering Layer — one-liner installer.
 #
-# Uso (one-liner):
-#   curl -fsSL https://raw.githubusercontent.com/MattBi-web/ai-engineering-layer/main/distribution/install.sh | bash
+# Usage (one-liner):
+#   curl -fsSL https://raw.githubusercontent.com/MattBi-web/ai-engineering-layer/master/distribution/install.sh | bash
 #
-# Idempotente: re-eseguibile in sicurezza. Tutto opzionale tranne plugin agent-skills + codebase-memory MCP.
-# Opt-in: Obsidian (vault personale), routine di re-indexing notturno (macOS launchd).
+# Idempotent: safe to re-run. Everything is optional except the agent-skills plugin + codebase-memory MCP.
+# Opt-in: Obsidian (personal vault), nightly re-indexing routine (macOS launchd).
 #
-# Flag:
-#   --with-obsidian /path/to/vault   abilita il server MCP Obsidian sul vault indicato
-#   --with-reindex-routine           installa il job launchd notturno (solo macOS)
-#   --framework-dir /path            dove clonare il template del framework (default: ~/Dev/ai-engineering-layer)
-#   --dry-run                        mostra cosa farebbe, senza modificare nulla
-#   --help                           questo testo
+# Flags:
+#   --with-obsidian /path/to/vault   enable the Obsidian MCP server on the given vault
+#   --with-reindex-routine           install the nightly launchd job (macOS only)
+#   --framework-dir /path            where to clone the framework template (default: ~/Dev/ai-engineering-layer)
+#   --dry-run                        show what would be done, without changing anything
+#   --help                           this text
 
 set -euo pipefail
 
 # ===== Config (override via env vars) =====
-REPO_URL="${REPO_URL:-https://github.com/MattBi-web/ai-engineering-layer.git}"  # ← cambia OWNER prima di pubblicare
+REPO_URL="${REPO_URL:-https://github.com/MattBi-web/ai-engineering-layer.git}"  # ← change OWNER before publishing
 DEFAULT_FW_DIR="${HOME}/Dev/ai-engineering-layer"
 WITH_OBSIDIAN=""
 WITH_REINDEX="0"
@@ -32,7 +32,7 @@ while [ $# -gt 0 ]; do
     --framework-dir)        FW_DIR="${2:-}"; shift 2 ;;
     --dry-run)              DRY_RUN="1"; shift ;;
     -h|--help)              sed -n '2,18p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
-    *) echo "flag sconosciuto: $1" >&2; exit 2 ;;
+    *) echo "unknown flag: $1" >&2; exit 2 ;;
   esac
 done
 FW_DIR="${FW_DIR:-$DEFAULT_FW_DIR}"
@@ -46,52 +46,52 @@ warn(){ printf "\033[1;33m! %s\033[0m\n" "$*"; }
 cat <<'BANNER'
 ================================================================
   AI Engineering Layer — installer
-  - plugin agent-skills (processo: /spec /plan /build /test /review /ship + 28 skill)
-  - MCP codebase-memory (knowledge graph del codice → -token e -allucinazioni)
-  - regola "graph-first" e model routing (opusplan)
-  - template del framework (3 cordoni di enforcement, layer, governance)
-  - opzionale: Obsidian (memoria lungo termine), routine notturna di re-indicizzazione
+  - agent-skills plugin (process: /spec /plan /build /test /review /ship + 28 skills)
+  - codebase-memory MCP (code knowledge graph → fewer tokens, fewer hallucinations)
+  - "graph-first" rule and model routing (opusplan)
+  - framework template (3 enforcement rings, layers, governance)
+  - optional: Obsidian (long-term memory), nightly re-indexing routine
 ================================================================
 BANNER
 
-# ===== Prerequisiti =====
-say "Verifico prerequisiti"
-need() { command -v "$1" >/dev/null 2>&1 || { echo "manca: $1 — installalo e riprova" >&2; exit 1; }; }
+# ===== Prerequisites =====
+say "Checking prerequisites"
+need() { command -v "$1" >/dev/null 2>&1 || { echo "missing: $1 — install it and retry" >&2; exit 1; }; }
 need claude; need node; need npm; need git; need jq
 ok "claude $(claude --version 2>/dev/null | head -1) · node $(node -v) · npm $(npm -v) · git ok · jq ok"
 
-# ===== 1) Plugin agent-skills (idempotente) =====
-say "Installo il plugin agent-skills (Addy Osmani, MIT)"
+# ===== 1) agent-skills plugin (idempotent) =====
+say "Installing the agent-skills plugin (Addy Osmani, MIT)"
 if claude plugin list 2>/dev/null | grep -q 'agent-skills@addy-agent-skills'; then
-  ok "plugin già installato"
+  ok "plugin already installed"
 else
   run "claude plugin marketplace add addyosmani/agent-skills"
   run "claude plugin install agent-skills@addy-agent-skills"
-  ok "plugin agent-skills installato"
+  ok "agent-skills plugin installed"
 fi
 
 # ===== 2) codebase-memory MCP =====
-say "Installo codebase-memory-mcp (binario, ~250MB)"
+say "Installing codebase-memory-mcp (binary, ~250MB)"
 if command -v codebase-memory-mcp >/dev/null 2>&1; then
-  ok "binario già presente in $(command -v codebase-memory-mcp)"
+  ok "binary already present at $(command -v codebase-memory-mcp)"
 else
   run "npm install -g codebase-memory-mcp"
 fi
-say "Registro il server MCP codebase-memory"
+say "Registering the codebase-memory MCP server"
 if claude mcp list 2>/dev/null | grep -q '^codebase-memory:'; then
-  ok "server MCP già registrato"
+  ok "MCP server already registered"
 else
   run "claude mcp add codebase-memory -- $(command -v codebase-memory-mcp || echo codebase-memory-mcp)"
 fi
 
-# ===== 3) (opzionale) Obsidian =====
+# ===== 3) (optional) Obsidian =====
 if [ -n "$WITH_OBSIDIAN" ]; then
-  say "Configuro server MCP Obsidian sul vault: $WITH_OBSIDIAN"
+  say "Configuring the Obsidian MCP server on vault: $WITH_OBSIDIAN"
   if [ ! -d "$WITH_OBSIDIAN" ]; then
-    warn "il path '$WITH_OBSIDIAN' non esiste — lo creo (vault vuoto)"
+    warn "path '$WITH_OBSIDIAN' does not exist — creating it (empty vault)"
     run "mkdir -p '$WITH_OBSIDIAN'"
   fi
-  # config .obsidian minimale se mancante (obsidian-mcp valida il vault)
+  # minimal .obsidian config if missing (obsidian-mcp validates the vault)
   if [ ! -d "$WITH_OBSIDIAN/.obsidian" ]; then
     run "mkdir -p '$WITH_OBSIDIAN/.obsidian'"
     for j in app appearance hotkeys; do run "echo '{}' > '$WITH_OBSIDIAN/.obsidian/$j.json'"; done
@@ -101,13 +101,13 @@ if [ -n "$WITH_OBSIDIAN" ]; then
   if ! claude mcp list 2>/dev/null | grep -q '^obsidian:'; then
     run "claude mcp add obsidian -- npx -y obsidian-mcp '$WITH_OBSIDIAN'"
   fi
-  ok "Obsidian MCP attivo sul vault $WITH_OBSIDIAN"
+  ok "Obsidian MCP active on vault $WITH_OBSIDIAN"
 else
-  warn "Obsidian non configurato (riavvia con --with-obsidian /path/to/vault se lo vuoi)"
+  warn "Obsidian not configured (re-run with --with-obsidian /path/to/vault if you want it)"
 fi
 
-# ===== 4) ~/.claude/settings.json (merge sicuro) =====
-say "Aggiorno ~/.claude/settings.json (modello opusplan + permessi read-only, merge non distruttivo)"
+# ===== 4) ~/.claude/settings.json (safe merge) =====
+say "Updating ~/.claude/settings.json (opusplan model + read-only permissions, non-destructive merge)"
 SETTINGS="$HOME/.claude/settings.json"
 mkdir -p "$HOME/.claude"
 [ -f "$SETTINGS" ] || echo '{}' > "$SETTINGS"
@@ -120,7 +120,7 @@ ALLOW='[
   "Bash(claude mcp list)"
 ]'
 if [ "$DRY_RUN" = "1" ]; then
-  echo "[dry-run] merge settings.json (model=opusplan, permissions.allow ⊕ allowlist read-only)"
+  echo "[dry-run] merge settings.json (model=opusplan, permissions.allow ⊕ read-only allowlist)"
 else
   tmp=$(mktemp)
   jq --argjson allow "$ALLOW" '
@@ -129,31 +129,31 @@ else
     | .permissions.allow = ((.permissions.allow // []) + $allow | unique)
   ' "$SETTINGS" > "$tmp" && mv "$tmp" "$SETTINGS"
 fi
-ok "settings.json aggiornato (preservate le tue chiavi esistenti)"
+ok "settings.json updated (your existing keys preserved)"
 
 # ===== 5) ~/.claude/CLAUDE.md (graph-first + model routing) =====
-say "Aggiorno ~/.claude/CLAUDE.md (regola graph-first + routing subagent)"
+say "Updating ~/.claude/CLAUDE.md (graph-first rule + subagent routing)"
 CLAUDE_MD="$HOME/.claude/CLAUDE.md"
 MARK_BEGIN="<!-- ai-engineering-layer: begin -->"
 MARK_END="<!-- ai-engineering-layer: end -->"
 BLOCK="$MARK_BEGIN
-## Codice: usa il knowledge graph PRIMA di grep/lettura file
-È attivo il server MCP \`codebase-memory\`. Nei progetti indicizzati (\`list_projects\`) usa PRIMA gli
-strumenti del grafo (\`search_graph\`, \`search_code\`, \`trace_path\`, \`get_code_snippet\`,
-\`get_architecture\`); fallback a grep solo quando il progetto non è nel grafo o serve testo esatto.
+## Code: use the knowledge graph BEFORE grep/reading files
+The \`codebase-memory\` MCP server is active. In indexed projects (\`list_projects\`) use the graph
+tools FIRST (\`search_graph\`, \`search_code\`, \`trace_path\`, \`get_code_snippet\`,
+\`get_architecture\`); fall back to grep only when the project isn't in the graph or you need exact text.
 
-## Conoscenza in Obsidian (se configurato)
-Server MCP \`obsidian\` (vault personale): \`search-vault\`/\`read-note\` per ADR, decisioni, convenzioni.
+## Knowledge in Obsidian (if configured)
+MCP server \`obsidian\` (personal vault): \`search-vault\`/\`read-note\` for ADRs, decisions, conventions.
 
-## Selezione del modello (routing per costo)
-Default \`opusplan\`. Delegando via Agent: \`haiku\` per ricerche/lookup, \`sonnet\` per impl/test,
-\`opus\` per architettura/analisi profonda. La manovalanza va su modelli economici.
+## Model selection (cost-based routing)
+Default \`opusplan\`. When delegating via Agent: \`haiku\` for search/lookup, \`sonnet\` for impl/tests,
+\`opus\` for architecture/deep analysis. Grunt work goes to cheaper models.
 $MARK_END"
 if [ "$DRY_RUN" = "1" ]; then
-  echo "[dry-run] scrivo/aggiorno blocco marcato in $CLAUDE_MD"
+  echo "[dry-run] writing/updating marked block in $CLAUDE_MD"
 else
   if [ -f "$CLAUDE_MD" ] && grep -q "$MARK_BEGIN" "$CLAUDE_MD"; then
-    # sostituisci il blocco fra i marker
+    # replace the block between the markers
     awk -v b="$MARK_BEGIN" -v e="$MARK_END" -v rep="$BLOCK" '
       $0 ~ b {print rep; skip=1; next} skip && $0 ~ e {skip=0; next} !skip
     ' "$CLAUDE_MD" > "$CLAUDE_MD.tmp" && mv "$CLAUDE_MD.tmp" "$CLAUDE_MD"
@@ -161,27 +161,27 @@ else
     printf "\n%s\n" "$BLOCK" >> "$CLAUDE_MD"
   fi
 fi
-ok "CLAUDE.md aggiornato (blocco fra marker, ri-eseguibile in sicurezza)"
+ok "CLAUDE.md updated (marked block, safe to re-run)"
 
-# ===== 6) Clone del framework template =====
-say "Clono il template framework in $FW_DIR"
+# ===== 6) Clone the framework template =====
+say "Cloning the framework template into $FW_DIR"
 if [ -d "$FW_DIR/.git" ]; then
-  ok "già presente — aggiorno"
+  ok "already present — updating"
   run "git -C '$FW_DIR' pull --ff-only || true"
 else
   run "git clone --depth 1 '$REPO_URL' '$FW_DIR'"
 fi
-ok "framework template disponibile in $FW_DIR (droppa i file dentro un repo target per attivare i 3 cordoni)"
+ok "framework template available at $FW_DIR (drop the files into a target repo to enable the 3 rings)"
 
-# ===== 7) (opzionale, macOS) Routine notturna di re-indicizzazione =====
+# ===== 7) (optional, macOS) Nightly re-indexing routine =====
 if [ "$WITH_REINDEX" = "1" ]; then
   if [ "$(uname)" != "Darwin" ]; then
-    warn "--with-reindex-routine è solo macOS (launchd). Saltato."
+    warn "--with-reindex-routine is macOS only (launchd). Skipped."
   else
-    say "Installo la routine launchd notturna (03:17) di re-indicizzazione"
+    say "Installing the nightly launchd re-indexing routine (03:17)"
     mkdir -p "$HOME/.claude/scripts" "$HOME/.claude/logs" "$HOME/Library/LaunchAgents"
     cp "$FW_DIR/distribution/reindex_codebase_memory.sh" "$HOME/.claude/scripts/" 2>/dev/null || \
-      curl -fsSL "${REPO_URL%.git}/raw/main/distribution/reindex_codebase_memory.sh" \
+      curl -fsSL "${REPO_URL%.git}/raw/master/distribution/reindex_codebase_memory.sh" \
            -o "$HOME/.claude/scripts/reindex_codebase_memory.sh"
     chmod +x "$HOME/.claude/scripts/reindex_codebase_memory.sh"
     cat > "$HOME/Library/LaunchAgents/com.aengl.reindex.plist" <<PLIST
@@ -199,34 +199,34 @@ if [ "$WITH_REINDEX" = "1" ]; then
 PLIST
     launchctl bootstrap "gui/$(id -u)" "$HOME/Library/LaunchAgents/com.aengl.reindex.plist" 2>/dev/null \
       || launchctl load -w "$HOME/Library/LaunchAgents/com.aengl.reindex.plist"
-    ok "routine notturna installata (log in ~/.claude/logs)"
+    ok "nightly routine installed (logs in ~/.claude/logs)"
   fi
 else
-  warn "Routine re-indexing non installata (riavvia con --with-reindex-routine per attivarla)"
+  warn "Re-indexing routine not installed (re-run with --with-reindex-routine to enable it)"
 fi
 
-# ===== 8) Riepilogo =====
+# ===== 8) Summary =====
 cat <<EOF
 
 ================================================================
-✔ Setup completato. Cosa hai ora (riavvia Claude Code per caricare il plugin):
-  • /spec /plan /build /test /review /ship  (agent-skills, 28 skill)
+✔ Setup complete. What you have now (restart Claude Code to load the plugin):
+  • /spec /plan /build /test /review /ship  (agent-skills, 28 skills)
   • MCP codebase-memory   →   list_projects · search_graph · trace_path · get_architecture · …
 $( [ -n "$WITH_OBSIDIAN" ] && echo "  • MCP obsidian        →   search-vault · read-note" )
-  • Modello default: opusplan (Opus in plan, Sonnet in esecuzione)
-  • Regola graph-first in ~/.claude/CLAUDE.md (uso il grafo prima di grep)
+  • Default model: opusplan (Opus for planning, Sonnet for execution)
+  • Graph-first rule in ~/.claude/CLAUDE.md (graph before grep)
   • Framework template:    $FW_DIR
-$( [ "$WITH_REINDEX" = "1" ] && echo "  • Routine notturna di re-indicizzazione: 03:17 (~/.claude/scripts/reindex_codebase_memory.sh)" )
+$( [ "$WITH_REINDEX" = "1" ] && echo "  • Nightly re-indexing routine: 03:17 (~/.claude/scripts/reindex_codebase_memory.sh)" )
 
-Per attivare i 3 cordoni di enforcement su UN repo target:
+To enable the 3 enforcement rings on ONE target repo:
   cd <repo>
   cp $FW_DIR/.github/PULL_REQUEST_TEMPLATE.md .github/
   cp $FW_DIR/.github/workflows/non-negotiables.yml .github/workflows/
   cp -r $FW_DIR/enforcement enforcement/
   cp $FW_DIR/enforcement/.pre-commit-config.yaml .pre-commit-config.yaml
   pre-commit install
-  # poi indicizza il repo via il tool MCP "index_repository"
+  # then index the repo via the "index_repository" MCP tool
 
-Disinstallazione (al volo): claude plugin uninstall agent-skills · claude mcp remove codebase-memory
+Quick uninstall: claude plugin uninstall agent-skills · claude mcp remove codebase-memory
 ================================================================
 EOF

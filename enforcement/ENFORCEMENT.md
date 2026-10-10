@@ -1,40 +1,40 @@
-# Enforcement — i 3 cordoni
+# Enforcement — the 3 lines of defense
 
-I "MUST" del framework diventano vincoli **eseguiti**, su tre livelli che si rinforzano a vicenda.
-Stack target: **FastAPI (Python) + React/TS + Supabase**. Gli script sono **euristici** (grep/regex):
-ottimi come rete di sicurezza, ma vanno tarati sul codice reale — possono dare falsi positivi/negativi.
-Ogni script ha un meccanismo di **esenzione esplicita** (commento marker) per i casi legittimi.
+The framework's "MUST"s become **executed** constraints, on three levels that reinforce each other.
+Target stack: **FastAPI (Python) + React/TS + Supabase**. The scripts are **heuristic** (grep/regex):
+great as a safety net, but they need to be calibrated to the real code — they can produce false positives/negatives.
+Every script has an **explicit exemption** mechanism (marker comment) for legitimate cases.
 
-## Cordone 1 — pre-commit (locale, prima del commit)
+## Line 1 — pre-commit (local, before the commit)
 ```bash
 cp enforcement/.pre-commit-config.yaml .pre-commit-config.yaml
 pip install pre-commit && pre-commit install
 ```
-Blocca al commit: RLS mancante (NN#1), rate-limit mancante (NN#2), secrets/.env tracciati (NN#3) +
-gitleaks, `any` in TS, dipendenze inesistenti, sorgente senza test. Aggirabile con `--no-verify`, ma
-poi lo prende il Cordone 3.
+Blocks at commit time: missing RLS (NN#1), missing rate limit (NN#2), tracked secrets/.env (NN#3) +
+gitleaks, `any` in TS, nonexistent dependencies, source without tests. Can be bypassed with `--no-verify`, but
+then Line 3 catches it.
 
-## Cordone 2 — Claude Code hooks (durante lo sviluppo con l'agente)
-Fai il **merge** di `enforcement/claude-settings.hooks.json` dentro il `.claude/settings.json` del repo
-(livello PROGETTO, non `~/.claude`). Aggiunge:
-- **PreToolUse/Bash** → `block-destructive-bash.sh`: blocca `rm -rf`, push forzati, `DROP`, `sudo`, fork bomb.
-- **PostToolUse/Edit|Write** → `post-edit-check.sh`: lint rapido sul file toccato (ruff/eslint), non bloccante.
-- **Stop** → `run-tests-on-stop.sh`: esegue la test-suite; se rossa, **blocca la chiusura** (i test sono un vincolo).
-  Disattivabile con `AENG_SKIP_STOP_TESTS=1` per suite lente.
+## Line 2 — Claude Code hooks (during development with the agent)
+**Merge** `enforcement/claude-settings.hooks.json` into the repo's `.claude/settings.json`
+(PROJECT level, not `~/.claude`). It adds:
+- **PreToolUse/Bash** → `block-destructive-bash.sh`: blocks `rm -rf`, force pushes, `DROP`, `sudo`, fork bombs.
+- **PostToolUse/Edit|Write** → `post-edit-check.sh`: quick lint on the touched file (ruff/eslint), non-blocking.
+- **Stop** → `run-tests-on-stop.sh`: runs the test suite; if it fails, **blocks the session from ending** (tests are a constraint).
+  Can be disabled with `AENG_SKIP_STOP_TESTS=1` for slow suites.
 
-## Cordone 3 — CI (al merge, lato server, non aggirabile)
-- `non-negotiables.yml` — sempre attivo: 3 job (RLS / rate-limit / secrets+gitleaks). Se uno fallisce, niente merge.
-- `ai-code-gate.yml` — stratificato: legge i layer spuntati nel corpo della PR (`detect-layers.sh`) e attiva
-  solo i job dei layer toccati; se il tier è **critical**, richiede ≥2 review approvate.
+## Line 3 — CI (at merge, server-side, not bypassable)
+- `non-negotiables.yml` — always on: 3 jobs (RLS / rate-limit / secrets+gitleaks). If one fails, no merge.
+- `ai-code-gate.yml` — layered: reads the layers checked in the PR body (`detect-layers.sh`) and runs
+  only the jobs for the touched layers; if the tier is **critical**, it requires ≥2 approved reviews.
 
-Configura i due come **required status checks** sul branch protetto in GitHub.
+Configure both as **required status checks** on the protected branch in GitHub.
 
-## Come si comporta (esempi)
-- Migration con `CREATE TABLE` senza RLS → pre-commit blocca (NN#1); se aggiri, la CI blocca il merge.
-- Claude prova a chiudere con test rossi → hook Stop ritorna 2, la sessione non si chiude.
-- PR cosmetic → CI gira 3 NN + 1 job. PR critical → NN + job per ogni layer + gate 2-review.
+## How it behaves (examples)
+- Migration with `CREATE TABLE` without RLS → pre-commit blocks (NN#1); if bypassed, CI blocks the merge.
+- Claude tries to finish with failing tests → the Stop hook returns 2, the session doesn't end.
+- Cosmetic PR → CI runs the 3 NNs + 1 job. Critical PR → NNs + one job per layer + 2-review gate.
 
-## Tarare sul tuo stack
-- `check-rate-limit.sh`: adatta i pattern del tuo limiter (ora cerca slowapi/limiter/RateLimit).
-- `check-test-present.sh`: adatta le convenzioni di naming/posizione dei test.
-- `check-rls.sh`: se usi authz a livello app invece di RLS Postgres, sostituisci il check.
+## Calibrating to your stack
+- `check-rate-limit.sh`: adapt the patterns to your limiter (currently looks for slowapi/limiter/RateLimit).
+- `check-test-present.sh`: adapt to your test naming/location conventions.
+- `check-rls.sh`: if you use app-level authz instead of Postgres RLS, replace the check.

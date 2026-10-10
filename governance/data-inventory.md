@@ -1,17 +1,17 @@
 # Data Inventory (L11 — Compliance & Data Governance)
 
-Registro dei dati personali/sensibili trattati. Va aggiornato ogni volta che una PR tocca L11.
-È la base per retention, audit trail e adempimenti GDPR/HIPAA dove applicabile.
+Register of the personal/sensitive data processed. Update it every time a PR touches L11.
+It is the basis for retention, audit trail and GDPR/HIPAA obligations where applicable.
 
-| Dato | Tabella/Store | Classificazione | Base giuridica | Retention | Encryption | Chi vi accede |
+| Data | Table/Store | Classification | Legal basis | Retention | Encryption | Accessed by |
 |---|---|---|---|---|---|---|
-| es. email utente | `users.email` | PII | consenso | 24 mesi | at-rest + in-transit | service auth |
-| es. registrazione call | `calls.recording_url` | PII sensibile | contratto | 6 mesi | at-rest (KMS) | service vapi |
+| e.g. user email | `users.email` | PII | consent | 24 months | at-rest + in-transit | auth service |
+| e.g. call recording | `calls.recording_url` | sensitive PII | contract | 6 months | at-rest (KMS) | vapi service |
 |  |  |  |  |  |  |  |
 
-## Regole
-- Ogni colonna PII è marcata qui e ha RLS (NN#1) + encryption.
-- Nessun PII nei log (L5/L8).
-- Retention applicata via job schedulato; cancellazione/anonimizzazione documentata.
-- Audit trail per accessi a dati sensibili (chi/quando/perché).
-- Richieste GDPR (accesso/cancellazione): procedura linkata qui → <link>.
+## Rules
+- Every PII column is flagged here and has RLS (NN#1) + encryption.
+- No PII in logs (L5/L8).
+- Retention enforced via a scheduled job; deletion/anonymization documented.
+- Audit trail for access to sensitive data (who/when/why).
+- GDPR requests (access/erasure): procedure linked here → <link>.

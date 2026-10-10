@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-# Re-indicizza tutti i progetti presenti nel knowledge graph di codebase-memory-mcp.
-# Self-maintaining: legge i progetti correnti via `cli list_projects` e re-indicizza
-# ciascuna root ancora esistente. Pensato per essere lanciato da launchd (notturno).
-# Portabile: nessun path hardcoded (usa $HOME e $PATH).
+# Re-indexes every project in the codebase-memory-mcp knowledge graph.
+# Self-maintaining: reads the current projects via `cli list_projects` and re-indexes
+# each root that still exists. Meant to be launched by launchd (nightly).
+# Portable: no hardcoded paths (uses $HOME and $PATH).
 
 BIN="$(command -v codebase-memory-mcp || echo /opt/homebrew/bin/codebase-memory-mcp)"
 LOGDIR="$HOME/.claude/logs"
@@ -12,7 +12,7 @@ mkdir -p "$LOGDIR"
 echo "===== reindex $(date '+%Y-%m-%d %H:%M:%S') =====" >> "$LOG"
 
 if [ ! -x "$BIN" ]; then
-  echo "[error] binario non trovato: $BIN (installa con: npm i -g codebase-memory-mcp)" >> "$LOG"
+  echo "[error] binary not found: $BIN (install with: npm i -g codebase-memory-mcp)" >> "$LOG"
   exit 1
 fi
 

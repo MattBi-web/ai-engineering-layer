@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
-# NN#1 — RLS/authz su ogni tabella non pubblica. Euristico, portabile (bash 3.2+).
+# NN#1 — RLS/authz on every non-public table. Heuristic, portable (bash 3.2+).
 #
-# Caso A — repo con migration SQL: ogni CREATE TABLE deve avere ENABLE ROW LEVEL SECURITY + CREATE POLICY
-#          nella stessa migration. Eccezione: commento "-- rls-exempt: <motivo>".
-# Caso B — repo SENZA SQL ma che accede a tabelle (Supabase client / ORM): la RLS vive su Supabase e NON è
-#          verificabile dal codice. Si richiede un'ATTESTAZIONE tracciata: file governance/rls-attestation.md
-#          o marcatura "RLS: enabled" in governance/data-inventory.md. Senza attestazione → finding.
+# Case A — repo with SQL migrations: every CREATE TABLE must have ENABLE ROW LEVEL SECURITY + CREATE POLICY
+#          in the same migration. Exemption: comment "-- rls-exempt: <reason>".
+# Case B — repo WITHOUT SQL that still accesses tables (Supabase client / ORM): RLS lives in Supabase and CANNOT
+#          be verified from code. A tracked ATTESTATION is required: file governance/rls-attestation.md
+#          or an "RLS: enabled" marker in governance/data-inventory.md. No attestation → finding.
 #
-# Uso: check-rls.sh [file.sql ...]   (pre-commit passa i .sql modificati; senza argomenti fa audit del repo)
+# Usage: check-rls.sh [file.sql ...]   (pre-commit passes the modified .sql files; with no arguments it audits the repo)
 set -euo pipefail
 fail=0
 
@@ -17,37 +17,37 @@ check_sql_file() {
   grep -qiE '^\s*--\s*rls-exempt' "$f" && return 0
   while IFS= read -r tbl; do
     [ -z "$tbl" ] && continue
-    grep -qiE 'enable row level security' "$f" || { echo "❌ [NN#1] $f: tabella '$tbl' senza ENABLE ROW LEVEL SECURITY"; fail=1; }
-    grep -qiE 'create policy' "$f" || { echo "❌ [NN#1] $f: tabella '$tbl' senza CREATE POLICY"; fail=1; }
+    grep -qiE 'enable row level security' "$f" || { echo "❌ [NN#1] $f: table '$tbl' without ENABLE ROW LEVEL SECURITY"; fail=1; }
+    grep -qiE 'create policy' "$f" || { echo "❌ [NN#1] $f: table '$tbl' without CREATE POLICY"; fail=1; }
   done < <(grep -ioE 'create table (if not exists )?["a-z0-9_.]+' "$f" | sed -E 's/.* //; s/"//g')
 }
 
-# Raccogli i file SQL da controllare
+# Collect the SQL files to check
 sqls=("$@")
 if [ ${#sqls[@]} -eq 0 ]; then
   sqls=(); while IFS= read -r _l; do sqls+=("$_l"); done < <(find . -path ./node_modules -prune -o -name '*.sql' -print 2>/dev/null)
 fi
 
 if [ ${#sqls[@]} -gt 0 ]; then
-  # Caso A
+  # Case A
   for f in ${sqls[@]+"${sqls[@]}"}; do check_sql_file "$f"; done
 else
-  # Caso B — nessuna migration SQL: il repo accede a tabelle via Supabase/ORM?
-  # Segnali UNIVOCI di proprietà di tabelle DB (evita falsi positivi: Pydantic BaseModel NON è una tabella)
+  # Case B — no SQL migrations: does the repo access tables via Supabase/ORM?
+  # UNAMBIGUOUS signals of DB table ownership (avoids false positives: a Pydantic BaseModel is NOT a table)
   uses_tables=$(grep -rlE '\.table\(|\.from_\(|__tablename__|declarative_base\(|SQLModel,\s*table\s*=\s*True' --include='*.py' . 2>/dev/null | grep -vE 'node_modules|\.venv|/_backup|/_wip' | head -1 || true)
   if [ -n "$uses_tables" ]; then
     if grep -rqiE 'RLS[:= ]+(enabled|attiva|on|true)|rls-attested' governance/rls-attestation.md governance/data-inventory.md 2>/dev/null; then
-      echo "✅ [NN#1] nessuna migration SQL; accesso a tabelle presente ma RLS ATTESTATA (vedi governance/)."
+      echo "✅ [NN#1] no SQL migrations; table access present but RLS ATTESTED (see governance/)."
     else
-      echo "🔶 [NN#1] il repo accede a tabelle (Supabase/ORM) ma non ci sono migration SQL con RLS verificabili,"
-      echo "         né un'attestazione. → Conferma RLS su Supabase e documentala in governance/rls-attestation.md"
-      echo "         (oppure marca 'RLS: enabled' per ogni tabella in governance/data-inventory.md)."
+      echo "🔶 [NN#1] the repo accesses tables (Supabase/ORM) but there are no SQL migrations with verifiable RLS,"
+      echo "         nor an attestation. → Confirm RLS in Supabase and document it in governance/rls-attestation.md"
+      echo "         (or mark 'RLS: enabled' for each table in governance/data-inventory.md)."
       fail=1
     fi
   else
-    echo "✅ [NN#1] nessuna tabella rilevata (né SQL né accessi Supabase/ORM)."
+    echo "✅ [NN#1] no tables detected (neither SQL nor Supabase/ORM access)."
   fi
 fi
 
-[ $fail -eq 0 ] && echo "✅ [NN#1] RLS ok" || echo "→ RLS+policy nelle migration (caso A) oppure attestazione tracciata (caso B)."
+[ $fail -eq 0 ] && echo "✅ [NN#1] RLS ok" || echo "→ RLS+policy in the migrations (case A) or a tracked attestation (case B)."
 exit $fail

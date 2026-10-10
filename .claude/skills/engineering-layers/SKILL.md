@@ -5,8 +5,8 @@ description: Per-layer production-readiness checklists for the AI Engineering La
 
 # Engineering Layers — progressive checklists
 
-> Questa skill è la **asticella di production-readiness** (cosa deve essere vero), complementare alle
-> skill di *processo* di agent-skills (come si lavora). Le 3 Non-Negotiables sono enforced in `enforcement/`.
+> This skill is the **production-readiness bar** (what must be true), complementary to agent-skills'
+> *process* skills (how the work is done). The 3 Non-Negotiables are enforced in `enforcement/`.
 
 Production is an iceberg: code is the tip. A change DECLARES which layers it touches; load the
 checklist for **only those layers** from `layers/`, apply it in Step 4 (implementation) and Step 5
@@ -38,5 +38,5 @@ checklist for **only those layers** from `layers/`, apply it in Step 4 (implemen
 2. In Step 4, open each declared layer file and satisfy its checklist.
 3. In Step 5, the reviewer agent re-checks each declared layer file against the diff and runs NN#1–3.
 
-> Status: tutti i 12 layer (L0–L11) popolati. Le schede sono il punto di partenza: vanno tarate sui
-> pattern reali del repo target (`layers/_TEMPLATE.md` per aggiungerne/riscriverle).
+> Status: all 12 layers (L0–L11) populated. The sheets are a starting point: tune them to the
+> actual patterns of the target repo (use `layers/_TEMPLATE.md` to add or rewrite them).

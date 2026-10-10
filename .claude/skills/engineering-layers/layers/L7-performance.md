@@ -1,19 +1,19 @@
 # L7 — Performance & Scale
 
-**Scopo:** il sistema risponde entro budget e regge la crescita di carico e dati.
+**Purpose:** the system responds within budget and handles growth in load and data.
 
-**Decisioni di default:** performance budget per endpoint (p95). Cache dove serve (con invalidazione chiara).
-CDN per asset statici. Decisioni di scaling (read replica, sharding) prese sui dati, non a caso.
+**Default decisions:** performance budget per endpoint (p95). Caching where needed (with clear invalidation).
+CDN for static assets. Scaling decisions (read replicas, sharding) driven by data, not guesswork.
 
 **Checklist:**
-- [ ] Performance budget definito (es. p95 < 300ms) e verificato per le path calde.
-- [ ] Query DB indicizzate; niente N+1; paginazione su liste potenzialmente grandi.
-- [ ] Caching con strategia di invalidazione esplicita (non cache "che non scade mai").
-- [ ] Asset statici via CDN; payload compressi.
-- [ ] Crescita dati: scelta motivata su read replica / sharding key / partizionamento; consistenza dichiarata.
-- [ ] Load/performance test per i cambi su path critiche.
+- [ ] Performance budget defined (e.g. p95 < 300ms) and verified for hot paths.
+- [ ] DB queries indexed; no N+1; pagination on potentially large lists.
+- [ ] Caching with an explicit invalidation strategy (no cache that "never expires").
+- [ ] Static assets via CDN; compressed payloads.
+- [ ] Data growth: justified choice of read replica / sharding key / partitioning; consistency model declared.
+- [ ] Load/performance tests for changes on critical paths.
 
-**Non-Negotiable:** nessuna (ma il rate-limit di L6 è il primo presidio anti-sovraccarico).
+**Non-Negotiable:** none (but the L6 rate limit is the first line of defense against overload).
 
-**Stop condition:** se non esistono target di performance o stime di carico, fermati e concordali prima
-di ottimizzare (evita micro-ottimizzazioni premature).
+**Stop condition:** if there are no performance targets or load estimates, stop and agree on them before
+optimizing (avoid premature micro-optimizations).

@@ -1,18 +1,18 @@
 # L4 — Auth (Authentication & Authorization)
 
-**Scopo:** sai CHI è l'utente (authn) e COSA può fare (authz), separati e applicati a ogni richiesta.
+**Purpose:** you know WHO the user is (authn) and WHAT they can do (authz), kept separate and enforced on every request.
 
-**Decisioni di default:** Supabase Auth per authn. Authz applicata sia a livello DB (RLS, vedi L3) sia
-a livello service. Sessioni con access token a vita breve + refresh token. Mai authz solo lato frontend.
+**Default decisions:** Supabase Auth for authn. Authz enforced both at the DB level (RLS, see L3) and
+at the service level. Sessions with short-lived access tokens + refresh tokens. Never frontend-only authz.
 
 **Checklist:**
-- [ ] **Authentication ≠ Authorization**: separate. L'identità non implica il permesso.
-- [ ] Ogni endpoint/risorsa verifica i permessi lato server (mai fidarsi del client).
-- [ ] RLS allineata ai ruoli (coerenza con L3): la policy DB rispecchia l'authz applicativa.
-- [ ] Access token a vita breve + refresh token con rotazione/revoca; logout invalida la sessione.
-- [ ] Nessun controllo di autorizzazione solo nella UI (le `pages/` non sono una barriera di sicurezza).
-- [ ] Path critici (auth/payment) → tier critical (L0), review umana obbligatoria.
+- [ ] **Authentication ≠ Authorization**: kept separate. Identity does not imply permission.
+- [ ] Every endpoint/resource checks permissions server-side (never trust the client).
+- [ ] RLS aligned with roles (consistent with L3): the DB policy mirrors the application authz.
+- [ ] Short-lived access tokens + refresh tokens with rotation/revocation; logout invalidates the session.
+- [ ] No authorization checks in the UI only (`pages/` are not a security barrier).
+- [ ] Critical paths (auth/payment) → critical tier (L0), mandatory human review.
 
-**Non-Negotiable:** abilita NN#1 (l'authz a livello dati è la RLS).
+**Non-Negotiable:** enables NN#1 (data-level authz is RLS).
 
-**Stop condition:** se il modello di ruoli/permessi non è definito, fermati e chiedi; non inventare uno schema di autorizzazione.
+**Stop condition:** if the roles/permissions model is not defined, stop and ask; do not invent an authorization scheme.

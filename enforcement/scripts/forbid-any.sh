@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Type safety — vieta `any` in TypeScript nei file modificati. Eccezione: commento "// any-ok: <motivo>".
+# Type safety — forbids `any` in TypeScript in modified files. Exemption: comment "// any-ok: <reason>".
 set -euo pipefail
 fail=0
 files=("$@")
@@ -10,8 +10,8 @@ for f in ${files[@]+"${files[@]}"}; do
   [ -f "$f" ] || continue
   while IFS=: read -r ln content; do
     echo "$content" | grep -qE '//\s*any-ok' && continue
-    echo "❌ [type] $f:$ln  uso di 'any' → $content"; fail=1
+    echo "❌ [type] $f:$ln  use of 'any' → $content"; fail=1
   done < <(grep -nE '(:\s*any\b|<any>|as any\b|Array<any>|: any\[)' "$f" || true)
 done
-[ $fail -eq 0 ] && echo "✅ [type] nessun 'any'" || echo "→ Definisci un tipo/interfaccia esplicito, o '// any-ok: <motivo>' se inevitabile."
+[ $fail -eq 0 ] && echo "✅ [type] no 'any'" || echo "→ Define an explicit type/interface, or use '// any-ok: <reason>' if unavoidable."
 exit $fail

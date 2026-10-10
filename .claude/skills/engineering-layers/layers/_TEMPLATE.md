@@ -1,13 +1,13 @@
 # L? — <Layer name>
 
-**Scopo:** <una riga: cosa garantisce questo layer in produzione>
+**Purpose:** <one line: what this layer guarantees in production>
 
-**Decisioni di default:** <le scelte già prese, così l'agente non re-decide ogni volta>
+**Default decisions:** <the choices already made, so the agent doesn't re-decide every time>
 
-**Checklist (da soddisfare in Step 4, verificare in Step 5):**
+**Checklist (satisfy in Step 4, verify in Step 5):**
 - [ ] …
 - [ ] …
 
-**Non-Negotiable:** <se il layer ne contiene una, indicala; altrimenti "nessuna">
+**Non-Negotiable:** <if the layer contains one, name it; otherwise "none">
 
-**Stop condition:** <quando l'agente deve fermarsi e chiedere invece di assumere>
+**Stop condition:** <when the agent must stop and ask instead of assuming>

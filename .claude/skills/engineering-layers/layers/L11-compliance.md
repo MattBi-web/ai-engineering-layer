@@ -1,20 +1,20 @@
-# L11 — Compliance & Data Governance (condizionale)
+# L11 — Compliance & Data Governance (conditional)
 
-**Scopo:** i dati personali/regolati sono trattati legalmente, tracciati e cancellabili. Si attiva SOLO
-se la PR tocca PII o dati regolati.
+**Purpose:** personal/regulated data is processed lawfully, tracked and deletable. Activates ONLY
+if the PR touches PII or regulated data.
 
-**Decisioni di default:** ogni dato PII è censito nel `governance/data-inventory.md`. Retention applicata
-e documentata. Audit trail sugli accessi sensibili. GDPR/HIPAA dove applicabile.
+**Default decisions:** every PII field is recorded in `governance/data-inventory.md`. Retention enforced
+and documented. Audit trail on sensitive access. GDPR/HIPAA where applicable.
 
 **Checklist:**
-- [ ] Ogni campo PII nuovo/modificato è registrato in `data-inventory.md` (classificazione, base giuridica, retention).
-- [ ] PII protetta: RLS (NN#1) + encryption in transit/at rest (L5); nessun PII nei log (L5/L8).
-- [ ] Retention: meccanismo di cancellazione/anonimizzazione previsto e documentato.
-- [ ] Audit trail per accessi a dati sensibili (chi/quando/perché).
-- [ ] Diritti dell'interessato (accesso/cancellazione GDPR): procedura referenziata.
-- [ ] Se HIPAA/finance: requisiti specifici verificati; tier critical (L0) + review dedicata.
+- [ ] Every new/modified PII field is registered in `data-inventory.md` (classification, legal basis, retention).
+- [ ] PII protected: RLS (NN#1) + encryption in transit/at rest (L5); no PII in logs (L5/L8).
+- [ ] Retention: deletion/anonymization mechanism in place and documented.
+- [ ] Audit trail for access to sensitive data (who/when/why).
+- [ ] Data subject rights (GDPR access/erasure): procedure referenced.
+- [ ] If HIPAA/finance: specific requirements verified; critical tier (L0) + dedicated review.
 
-**Non-Negotiable:** eredita NN#1 (RLS su tabelle con PII) e NN#3 (secrets/crittografia).
+**Non-Negotiable:** inherits NN#1 (RLS on tables with PII) and NN#3 (secrets/encryption).
 
-**Stop condition:** se non è chiaro se un dato è PII o quale base giuridica/retention si applichi, fermati
-e coinvolgi l'owner/DPO; non trattare dati regolati per inferenza.
+**Stop condition:** if it is unclear whether a piece of data is PII or which legal basis/retention applies, stop
+and involve the owner/DPO; do not process regulated data based on inference.

@@ -1,22 +1,22 @@
-# CLAUDE.md — shim per Claude Code
+# CLAUDE.md — Claude Code shim
 
-Claude Code non legge `AGENTS.md` nativamente: questo shim è load-bearing.
-**Leggi e applica [AGENTS.md](./AGENTS.md).** Qui solo il wiring Claude-Code-specifico.
+Claude Code does not read `AGENTS.md` natively: this shim is load-bearing.
+**Read and apply [AGENTS.md](./AGENTS.md).** This file contains only the Claude Code-specific wiring.
 
-## Processo = agent-skills (installato)
-Il ciclo di sviluppo (spec/plan/build/test/review/ship + 23 skill + review in fan-out) è fornito dal
-plugin `agent-skills@addy-agent-skills`. **Non reinventarlo.** Questo repo aggiunge solo il delta.
+## Process = agent-skills (installed)
+The development cycle (spec/plan/build/test/review/ship + 20+ skills + fan-out review) is provided by the
+`agent-skills@addy-agent-skills` plugin. **Do not reinvent it.** This repo adds only the delta.
 
-## Aggancio del delta al ciclo di agent-skills
-- **In `/spec` (DEFINE)** → esegui il **Context Bootstrap** (AGENTS.md §A): interroga `codebase-memory`
-  (`get_architecture`/`search_graph`/`search_code`/`trace_path`) e `obsidian` (`search-vault`) per riusare
-  l'esistente, prima di proporre l'architettura.
-- **In `/ship` (SHIP)** → esegui le **3 Non-Negotiables** (RLS / rate-limit / secrets) via `enforcement/`;
-  se una fallisce, NO-GO. La code-review vera la fa `/review` di agent-skills (fan-out), non duplicarla.
-- Per ogni cambiamento, dichiara i **layer** toccati e carica la checklist dalla skill `engineering-layers`.
+## Hooking the delta into the agent-skills cycle
+- **In `/spec` (DEFINE)** → run the **Context Bootstrap** (AGENTS.md §A): query `codebase-memory`
+  (`get_architecture`/`search_graph`/`search_code`/`trace_path`) and `obsidian` (`search-vault`) to reuse
+  what exists, before proposing the architecture.
+- **In `/ship` (SHIP)** → run the **3 Non-Negotiables** (RLS / rate-limit / secrets) via `enforcement/`;
+  if one fails, NO-GO. The actual code review is done by agent-skills' `/review` (fan-out); do not duplicate it.
+- For every change, declare the **layers** touched and load the checklist from the `engineering-layers` skill.
 
 ## Model routing (cost discipline)
-Default `opusplan`. Delegando via **Agent**: `opus` per spec/review, `sonnet` per test/impl, `haiku` per i lookup del Context Bootstrap.
+Default `opusplan`. When delegating via **Agent**: `opus` for spec/review, `sonnet` for test/impl, `haiku` for Context Bootstrap lookups.
 
 ## Progressive disclosure
-Non inlineare i 12 layer: carica solo quello toccato dalla skill `engineering-layers`. Tieni questo file e AGENTS.md snelli.
+Do not inline the 12 layers: load only the touched one from the `engineering-layers` skill. Keep this file and AGENTS.md lean.

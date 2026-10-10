@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-# NN#2 — rate limiting EFFETTIVO sugli endpoint pubblici (FastAPI). Euristico, portabile (bash 3.2+).
-# Logica per-file:
-#   1) se c'è un rate-limit GLOBALE (middleware/limiter di app) → tutte le route coperte → PASS (con nota);
-#   2) altrimenti PER-ROUTE: conta le route e quelle con limiter esplicito; se restano route scoperte → fail.
-# Eccezione per-file: commento "# rate-limit-exempt: <motivo>" (es. router interno/health).
+# NN#2 — EFFECTIVE rate limiting on public endpoints (FastAPI). Heuristic, portable (bash 3.2+).
+# Per-file logic:
+#   1) if there is a GLOBAL rate limit (app-level middleware/limiter) → all routes covered → PASS (with a note);
+#   2) otherwise PER-ROUTE: count routes and those with an explicit limiter; if any route is uncovered → fail.
+# Per-file exemption: comment "# rate-limit-exempt: <reason>" (e.g. internal/health router).
 set -euo pipefail
 fail=0
 
@@ -22,17 +22,17 @@ for f in ${files[@]+"${files[@]}"}; do
   routes=$(grep -cE "$ROUTE_PAT" "$f" 2>/dev/null || true); routes=${routes:-0}
   [ "$routes" -eq 0 ] && continue
   if grep -qE "$GLOBAL_PAT" "$f"; then
-    echo "✅ [NN#2] $f: rate-limit globale rilevato → $routes route coperte dal middleware/limiter"
+    echo "✅ [NN#2] $f: global rate limit detected → $routes routes covered by middleware/limiter"
     continue
   fi
   limited=$(grep -cE "$PERROUTE_PAT" "$f" 2>/dev/null || true); limited=${limited:-0}
   if [ "$limited" -lt "$routes" ]; then
-    echo "❌ [NN#2] $f: $routes route, solo $limited con rate-limit esplicito e nessun middleware globale → endpoint scoperti"
+    echo "❌ [NN#2] $f: $routes routes, only $limited with explicit rate limit and no global middleware → uncovered endpoints"
     fail=1
   else
-    echo "✅ [NN#2] $f: $routes route, $limited con rate-limit per-route"
+    echo "✅ [NN#2] $f: $routes routes, $limited with per-route rate limit"
   fi
 done
 
-[ $fail -eq 0 ] && echo "✅ [NN#2] rate limit ok" || echo "→ Aggiungi un middleware globale (es. slowapi) o un limiter per-route, oppure '# rate-limit-exempt: <motivo>' per i router interni."
+[ $fail -eq 0 ] && echo "✅ [NN#2] rate limit ok" || echo "→ Add a global middleware (e.g. slowapi) or a per-route limiter, or '# rate-limit-exempt: <reason>' for internal routers."
 exit $fail

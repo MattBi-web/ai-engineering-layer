@@ -1,48 +1,48 @@
 <!--
-PR stratificata: spunta SOLO i layer che questa PR tocca, poi compila quelle sezioni.
-Una UI tweak compila pochi box; un flusso di pagamento li compila quasi tutti.
-Il rigore scala col rischio — non è una checklist da 60 voci da ignorare.
+Layered PR: tick ONLY the layers this PR touches, then fill in those sections.
+A UI tweak fills in a few boxes; a payment flow fills in almost all of them.
+Rigor scales with risk — this is not a 60-item checklist to be ignored.
 -->
 
 ## 🎚️ Tier
-- [ ] **cosmetic** (UI/copy/stile) — review leggera
-- [ ] **standard** (feature/bugfix) — protocollo a 5 step completo
-- [ ] **critical** (auth / payment / PII / migrazioni) — ⚠️ richiede ≥2 review umane + security scan
+- [ ] **cosmetic** (UI/copy/style) — light review
+- [ ] **standard** (feature/bugfix) — full 5-step protocol
+- [ ] **critical** (auth / payment / PII / migrations) — ⚠️ requires ≥2 human reviews + security scan
 
-## 🛑 Non-Negotiables (sempre — se una non si applica, spiega perché)
-- [ ] **NN#1** Ogni tabella nuova/modificata ha RLS + policy nella stessa migration
-- [ ] **NN#2** Ogni endpoint pubblico nuovo ha rate limiting
-- [ ] **NN#3** Nessun secret in file tracciati (`.env` ignorato, gitleaks pulito)
+## 🛑 Non-Negotiables (always — if one doesn't apply, explain why)
+- [ ] **NN#1** Every new/modified table has RLS + a policy in the same migration
+- [ ] **NN#2** Every new public endpoint has rate limiting
+- [ ] **NN#3** No secrets in tracked files (`.env` ignored, gitleaks clean)
 
-## 🤖 Check AI-specifici
-- [ ] **Package hallucination**: ogni dipendenza nuova esiste, versione pinnata, fonte verificata
-- [ ] Nessun secret/API key generato in chiaro
-- [ ] Se il codice usa un LLM (RAG/tool use): OWASP LLM Top 10 considerata (prompt injection)
+## 🤖 AI-specific checks
+- [ ] **Package hallucination**: every new dependency exists, version pinned, source verified
+- [ ] No secrets/API keys generated in plaintext
+- [ ] If the code uses an LLM (RAG/tool use): OWASP LLM Top 10 considered (prompt injection)
 
-## 📦 Layer toccati (spunta e compila solo questi)
-- [ ] **L0 Governance** — owner/ADR/glossario aggiornati; tier dichiarato
-- [ ] **L1 Architecture** — MVC rispettato; Context Bootstrap fatto (nessuna duplicazione); controller senza logica
-- [ ] **L2 Contracts & API** — tipi/interfacce espliciti; versioning/deprecation se API pubblica
-- [ ] **L3 Data** — RLS; migrazione zero-downtime (expand-contract); backup/rollback
-- [ ] **L4 Auth** — authn/authz separati; sessioni/refresh token
-- [ ] **L5 Security & Secrets** — input validato; crypto in transit/at rest; secrets da vault
-- [ ] **L6 Reliability** — rate limit; idempotenza; retry/timeout; circuit breaker
-- [ ] **L7 Performance & Scale** — cache/CDN; performance budget; sharding/replica se serve
-- [ ] **L8 Observability** — 4 Golden Signals; SLO; tracing; alert su burn rate
-- [ ] **L9 Deployment & Env** — staging/canary; rollback; feature flag; env promotion
+## 📦 Layers touched (tick and fill in only these)
+- [ ] **L0 Governance** — owner/ADR/glossary updated; tier declared
+- [ ] **L1 Architecture** — MVC respected; Context Bootstrap done (no duplication); controllers without logic
+- [ ] **L2 Contracts & API** — explicit types/interfaces; versioning/deprecation if public API
+- [ ] **L3 Data** — RLS; zero-downtime migration (expand-contract); backup/rollback
+- [ ] **L4 Auth** — authn/authz separated; sessions/refresh tokens
+- [ ] **L5 Security & Secrets** — input validated; crypto in transit/at rest; secrets from vault
+- [ ] **L6 Reliability** — rate limit; idempotency; retry/timeout; circuit breaker
+- [ ] **L7 Performance & Scale** — cache/CDN; performance budget; sharding/replicas if needed
+- [ ] **L8 Observability** — 4 Golden Signals; SLO; tracing; burn-rate alerts
+- [ ] **L9 Deployment & Env** — staging/canary; rollback; feature flags; env promotion
 - [ ] **L10 Operations** — runbook; on-call; incident response
-- [ ] **L11 Compliance** — PII handling; retention; audit trail (GDPR/HIPAA se rilevante)
+- [ ] **L11 Compliance** — PII handling; retention; audit trail (GDPR/HIPAA if relevant)
 
-## 🧪 Test
-- [ ] Unit/Integration scritti per la funzionalità
-- [ ] Coprono happy path **e** edge/error case
-- [ ] La suite esistente compila e passa
+## 🧪 Tests
+- [ ] Unit/integration tests written for the feature
+- [ ] They cover the happy path **and** edge/error cases
+- [ ] The existing suite builds and passes
 
-## 🔍 Self-Review AI (compliance report)
-**Pattern scelto e perché:**
+## 🔍 AI Self-Review (compliance report)
+**Chosen pattern and why:**
 
-**Cosa NON è stato fatto / assunzioni prese:**
+**What was NOT done / assumptions made:**
 
-**Layer toccati e perché:**
+**Layers touched and why:**
 
-<!-- Per PR standard/critical: allegare l'output dello Step 5 (reviewer-agent separato, model opus). -->
+<!-- For standard/critical PRs: attach the Step 5 output (separate reviewer agent, model opus). -->

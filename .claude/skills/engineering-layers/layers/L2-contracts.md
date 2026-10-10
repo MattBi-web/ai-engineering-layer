@@ -1,19 +1,19 @@
 # L2 — Contracts & API
 
-**Scopo:** le interfacce tra componenti/servizi sono esplicite, tipizzate, versionate e stabili.
+**Purpose:** interfaces between components/services are explicit, typed, versioned and stable.
 
-**Decisioni di default:** tipi/interfacce definiti PRIMA della logica (Step 2 del protocollo). OpenAPI per
-le API HTTP. Tipi condivisi tra backend e frontend (generati o in `shared/`). Versioning esplicito sulle API pubbliche.
+**Default decisions:** types/interfaces defined BEFORE the logic (Step 2 of the protocol). OpenAPI for
+HTTP APIs. Types shared between backend and frontend (generated or in `shared/`). Explicit versioning on public APIs.
 
 **Checklist:**
-- [ ] Tipi/interfacce/schema definiti prima dell'implementazione; niente `any` (vedi L1/type safety).
-- [ ] API HTTP documentata (OpenAPI/schema); request/response tipizzati.
-- [ ] Contratto condiviso back↔front (tipi generati o in `shared/`), non duplicato a mano.
-- [ ] API pubblica: versione esplicita (`/v1/…`) + policy di deprecation con timeline.
-- [ ] Breaking change: gestito con versioning, non rompendo i consumer esistenti.
-- [ ] Validazione del payload ai confini (vedi L5).
+- [ ] Types/interfaces/schemas defined before implementation; no `any` (see L1/type safety).
+- [ ] HTTP API documented (OpenAPI/schema); typed request/response.
+- [ ] Contract shared back↔front (generated types or in `shared/`), not duplicated by hand.
+- [ ] Public API: explicit version (`/v1/…`) + deprecation policy with a timeline.
+- [ ] Breaking change: handled through versioning, without breaking existing consumers.
+- [ ] Payload validation at the boundaries (see L5).
 
-**Non-Negotiable:** nessuna.
+**Non-Negotiable:** none.
 
-**Stop condition:** se un contratto è ambiguo o un consumer esterno dipende dall'API, fermati e
-concorda lo schema/versioning prima di implementare.
+**Stop condition:** if a contract is ambiguous or an external consumer depends on the API, stop and
+agree on the schema/versioning before implementing.

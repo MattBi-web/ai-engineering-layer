@@ -1,23 +1,23 @@
 # L3 — Data
 
-**Scopo:** schema dati corretto, sicuro e migrabile senza downtime; nessuna tabella esposta "aperta".
+**Purpose:** a correct, secure data schema that can be migrated without downtime; no table left "open".
 
-**Decisioni di default:** Postgres/Supabase. Ogni tabella nasce con RLS abilitata. Migrazioni
-versionate in `migrations/`, pattern expand-contract. Backup con RPO/RTO dichiarati.
+**Default decisions:** Postgres/Supabase. Every table is created with RLS enabled. Migrations
+versioned in `migrations/`, expand-contract pattern. Backups with declared RPO/RTO.
 
 **Checklist:**
-- [ ] **NN#1**: ogni `CREATE TABLE` con dati non pubblici ha `ENABLE ROW LEVEL SECURITY` + almeno una `CREATE POLICY` nella STESSA migration.
-- [ ] Migrazione zero-downtime: nessuna colonna NOT NULL senza default su tabella popolata; pattern expand→migrate→contract per rename/drop.
-- [ ] Indici sulle colonne usate da query/policy; foreign key esplicite.
-- [ ] Nessun dato sensibile in chiaro (vedi L5/L11); colonne PII marcate nel data-inventory.
-- [ ] Strategia di backup e restore *testata* (non solo configurata); RPO/RTO annotati.
-- [ ] Rollback della migration definito.
+- [ ] **NN#1**: every `CREATE TABLE` holding non-public data has `ENABLE ROW LEVEL SECURITY` + at least one `CREATE POLICY` in the SAME migration.
+- [ ] Zero-downtime migration: no NOT NULL column without a default on a populated table; expand→migrate→contract pattern for rename/drop.
+- [ ] Indexes on columns used by queries/policies; explicit foreign keys.
+- [ ] No sensitive data in plaintext (see L5/L11); PII columns flagged in the data-inventory.
+- [ ] Backup and restore strategy *tested* (not just configured); RPO/RTO recorded.
+- [ ] Migration rollback defined.
 
-**Repo senza migration SQL (Supabase client/ORM):** la RLS vive su Supabase e non è verificabile dal codice
-→ serve un'**attestazione tracciata** in `governance/rls-attestation.md` (o "RLS: enabled" per tabella in
-`data-inventory.md`). Il check `check-rls.sh` la richiede in questo caso.
+**Repos without SQL migrations (Supabase client/ORM):** RLS lives in Supabase and cannot be verified from code
+→ a **tracked attestation** is required in `governance/rls-attestation.md` (or "RLS: enabled" per table in
+`data-inventory.md`). The `check-rls.sh` check requires it in this case.
 
-**Non-Negotiable:** NN#1 — RLS/authz su ogni tabella non pubblica.
+**Non-Negotiable:** NN#1 — RLS/authz on every non-public table.
 
-**Stop condition:** se una tabella deve restare senza RLS (es. dati pubblici), fermati e crea un ADR
-che documenti l'eccezione; non disabilitare RLS silenziosamente.
+**Stop condition:** if a table must stay without RLS (e.g. public data), stop and create an ADR
+documenting the exception; never disable RLS silently.

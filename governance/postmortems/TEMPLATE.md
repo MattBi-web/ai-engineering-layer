@@ -1,32 +1,32 @@
-# Postmortem — <titolo incidente> (YYYY-MM-DD)
+# Postmortem — <incident title> (YYYY-MM-DD)
 
-> Blameless: si analizzano sistemi e processi, non le persone.
+> Blameless: analyze systems and processes, not people.
 
-- **Severità:** SEV1 | SEV2 | SEV3
-- **Durata:** inizio → fine (durata totale)
-- **Autore / partecipanti:** …
+- **Severity:** SEV1 | SEV2 | SEV3
+- **Duration:** start → end (total duration)
+- **Author / participants:** …
 
-## Sommario
-2-3 righe: cosa è successo e impatto.
+## Summary
+2-3 lines: what happened and the impact.
 
-## Impatto
-Utenti/transazioni colpiti, perdita stimata, SLO/error budget consumato.
+## Impact
+Users/transactions affected, estimated loss, SLO/error budget consumed.
 
 ## Timeline (UTC)
-| Ora | Evento |
+| Time | Event |
 |---|---|
-| HH:MM | primo segnale / alert |
-| HH:MM | inizio indagine |
-| HH:MM | mitigazione |
-| HH:MM | risolto |
+| HH:MM | first signal / alert |
+| HH:MM | investigation started |
+| HH:MM | mitigation |
+| HH:MM | resolved |
 
 ## Root cause
-Causa radice (tecnica + di processo). Perché i guardrail non l'hanno intercettata?
+Root cause (technical + process). Why didn't the guardrails catch it?
 
-## Cosa è andato bene / male / fortuna
-- Bene: … · Male: … · Fortuna: …
+## What went well / badly / lucky
+- Well: … · Badly: … · Lucky: …
 
-## Action items (tracciati)
-| Azione | Owner | Scadenza | Issue |
+## Action items (tracked)
+| Action | Owner | Due date | Issue |
 |---|---|---|---|
-| es. aggiungere check al Cordone 3 | @… | YYYY-MM-DD | #… |
+| e.g. add a check to Line 3 | @… | YYYY-MM-DD | #… |

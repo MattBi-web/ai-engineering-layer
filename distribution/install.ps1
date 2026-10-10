@@ -1,21 +1,21 @@
 <#
-AI Engineering Layer — installer per Windows (PowerShell 5.1+ / 7+).
+AI Engineering Layer — Windows installer (PowerShell 5.1+ / 7+).
 
-Uso one-liner (modalità base, senza argomenti):
-  irm https://raw.githubusercontent.com/MattBi-web/ai-engineering-layer/main/distribution/install.ps1 | iex
+One-liner usage (basic mode, no arguments):
+  irm https://raw.githubusercontent.com/MattBi-web/ai-engineering-layer/master/distribution/install.ps1 | iex
 
-Con argomenti (Obsidian / routine in Task Scheduler):
+With arguments (Obsidian / Task Scheduler routine):
   irm <URL>/install.ps1 -OutFile install.ps1
   .\install.ps1 -WithObsidian "$HOME\Documents\Memoria_AI" -WithReindexRoutine
 
-Idempotente. Non sovrascrive le tue impostazioni esistenti — fa merge dove serve.
-Per i Claude Code hook (block-destructive-bash, ecc.) serve `bash` (Git Bash o WSL): se non c'è,
-l'install resta valido ma gli hook saranno disabilitati (lo segnaliamo).
+Idempotent. Never overwrites your existing settings — merges where needed.
+Claude Code hooks (block-destructive-bash, etc.) need `bash` (Git Bash or WSL): if it's missing,
+the install still works but the hooks will be disabled (you'll get a warning).
 #>
 
 [CmdletBinding()]
 param(
-  [string]$RepoUrl       = "https://github.com/MattBi-web/ai-engineering-layer.git",   # ← cambia OWNER prima di pubblicare
+  [string]$RepoUrl       = "https://github.com/MattBi-web/ai-engineering-layer.git",   # ← change OWNER before publishing
   [string]$FrameworkDir  = (Join-Path $HOME "Dev\ai-engineering-layer"),
   [string]$WithObsidian  = "",
   [switch]$WithReindexRoutine,
@@ -37,53 +37,53 @@ function Run  ($cmd){ if ($DryRun){ Write-Host "[dry-run] $cmd" } else { Invoke-
 Write-Host @"
 ================================================================
   AI Engineering Layer — installer (Windows)
-  - plugin agent-skills (/spec /plan /build /test /review /ship + 28 skill)
-  - MCP codebase-memory (knowledge graph del codice)
-  - regola graph-first + model routing (opusplan)
-  - template del framework (governance + enforcement + 12 layer)
-  - opzionale: Obsidian, routine schedulata (Task Scheduler)
+  - agent-skills plugin (/spec /plan /build /test /review /ship + 28 skills)
+  - codebase-memory MCP (code knowledge graph)
+  - graph-first rule + model routing (opusplan)
+  - framework template (governance + enforcement + 12 layers)
+  - optional: Obsidian, scheduled routine (Task Scheduler)
 ================================================================
 "@ -ForegroundColor White
 
 # ===== Prereq =====
-Say "Verifico prerequisiti"
+Say "Checking prerequisites"
 foreach ($cmd in @('claude','node','npm','git')) {
-  if (-not (Get-Command $cmd -ErrorAction SilentlyContinue)) { Fail "manca: $cmd — installalo e riprova" }
+  if (-not (Get-Command $cmd -ErrorAction SilentlyContinue)) { Fail "missing: $cmd — install it and retry" }
 }
 $bashAvailable = [bool](Get-Command bash -ErrorAction SilentlyContinue)
-if (-not $bashAvailable) { Warn "bash non trovato: i Claude Code hook (PreToolUse/Stop/...) richiedono Git Bash o WSL. Tutto il resto funziona." }
+if (-not $bashAvailable) { Warn "bash not found: Claude Code hooks (PreToolUse/Stop/...) require Git Bash or WSL. Everything else works." }
 Ok ("claude=" + ((claude --version 2>$null) -split "`n")[0] + " · node=" + (node -v) + " · npm=" + (npm -v))
 
-# ===== 1) Plugin agent-skills (idempotente) =====
-Say "Installo il plugin agent-skills"
+# ===== 1) agent-skills plugin (idempotent) =====
+Say "Installing the agent-skills plugin"
 $pluginList = & claude plugin list 2>$null
 if ($pluginList -match 'agent-skills@addy-agent-skills') {
-  Ok "plugin già installato"
+  Ok "plugin already installed"
 } else {
   Run "claude plugin marketplace add addyosmani/agent-skills"
   Run "claude plugin install agent-skills@addy-agent-skills"
-  Ok "plugin agent-skills installato"
+  Ok "agent-skills plugin installed"
 }
 
 # ===== 2) codebase-memory MCP =====
-Say "Installo codebase-memory-mcp (binario)"
+Say "Installing codebase-memory-mcp (binary)"
 if (Get-Command codebase-memory-mcp -ErrorAction SilentlyContinue) {
-  Ok ("binario già presente in " + (Get-Command codebase-memory-mcp).Source)
+  Ok ("binary already present at " + (Get-Command codebase-memory-mcp).Source)
 } else {
   Run "npm install -g codebase-memory-mcp"
 }
-Say "Registro il server MCP codebase-memory"
+Say "Registering the codebase-memory MCP server"
 $mcpList = & claude mcp list 2>$null
 if ($mcpList -match '^codebase-memory:') {
-  Ok "server MCP già registrato"
+  Ok "MCP server already registered"
 } else {
   Run "claude mcp add codebase-memory -- codebase-memory-mcp"
 }
 
-# ===== 3) (opzionale) Obsidian =====
+# ===== 3) (optional) Obsidian =====
 if ($WithObsidian) {
-  Say "Configuro server MCP Obsidian sul vault: $WithObsidian"
-  if (-not (Test-Path $WithObsidian)) { Warn "creo il path (vault vuoto)"; Run "New-Item -ItemType Directory -Force '$WithObsidian' | Out-Null" }
+  Say "Configuring the Obsidian MCP server on vault: $WithObsidian"
+  if (-not (Test-Path $WithObsidian)) { Warn "creating the path (empty vault)"; Run "New-Item -ItemType Directory -Force '$WithObsidian' | Out-Null" }
   $cfgDir = Join-Path $WithObsidian ".obsidian"
   if (-not (Test-Path $cfgDir)) {
     Run "New-Item -ItemType Directory -Force '$cfgDir' | Out-Null"
@@ -94,13 +94,13 @@ if ($WithObsidian) {
   if ($mcpList2 -notmatch '^obsidian:') {
     Run "claude mcp add obsidian -- npx -y obsidian-mcp '$WithObsidian'"
   }
-  Ok "Obsidian MCP attivo sul vault $WithObsidian"
+  Ok "Obsidian MCP active on vault $WithObsidian"
 } else {
-  Warn "Obsidian non configurato (riavvia con -WithObsidian '<path>' se lo vuoi)"
+  Warn "Obsidian not configured (re-run with -WithObsidian '<path>' if you want it)"
 }
 
-# ===== 4) settings.json (merge nativo PowerShell, senza jq) =====
-Say "Aggiorno ~/.claude/settings.json (model opusplan + allowlist read-only, merge non distruttivo)"
+# ===== 4) settings.json (native PowerShell merge, no jq) =====
+Say "Updating ~/.claude/settings.json (opusplan model + read-only allowlist, non-destructive merge)"
 $settingsPath = Join-Path $HOME ".claude\settings.json"
 if (-not (Test-Path (Split-Path $settingsPath))) { New-Item -ItemType Directory -Force (Split-Path $settingsPath) | Out-Null }
 if (-not (Test-Path $settingsPath)) { '{}' | Set-Content $settingsPath -Encoding UTF8 }
@@ -113,7 +113,7 @@ $allow = @(
   "Bash(claude mcp list)"
 )
 if ($DryRun) {
-  Write-Host "[dry-run] merge settings.json (model=opusplan, permissions.allow ⊕ allowlist read-only)"
+  Write-Host "[dry-run] merge settings.json (model=opusplan, permissions.allow ⊕ read-only allowlist)"
 } else {
   $obj = Get-Content $settingsPath -Raw | ConvertFrom-Json -AsHashtable
   if (-not $obj.ContainsKey('model'))       { $obj['model'] = 'opusplan' }
@@ -123,30 +123,30 @@ if ($DryRun) {
   $obj['permissions']['allow'] = @($merged)
   $obj | ConvertTo-Json -Depth 8 | Set-Content $settingsPath -Encoding UTF8
 }
-Ok "settings.json aggiornato"
+Ok "settings.json updated"
 
-# ===== 5) CLAUDE.md (blocco marcato, ri-eseguibile) =====
-Say "Aggiorno ~/.claude/CLAUDE.md"
+# ===== 5) CLAUDE.md (marked block, safe to re-run) =====
+Say "Updating ~/.claude/CLAUDE.md"
 $claudeMd = Join-Path $HOME ".claude\CLAUDE.md"
 $markBegin = "<!-- ai-engineering-layer: begin -->"
 $markEnd   = "<!-- ai-engineering-layer: end -->"
 $block = @"
 $markBegin
-## Codice: usa il knowledge graph PRIMA di grep/lettura file
-È attivo il server MCP ``codebase-memory``. Nei progetti indicizzati (``list_projects``) usa PRIMA gli
-strumenti del grafo (``search_graph``, ``search_code``, ``trace_path``, ``get_code_snippet``,
-``get_architecture``); fallback a grep solo quando il progetto non è nel grafo o serve testo esatto.
+## Code: use the knowledge graph BEFORE grep/reading files
+The ``codebase-memory`` MCP server is active. In indexed projects (``list_projects``) use the graph
+tools FIRST (``search_graph``, ``search_code``, ``trace_path``, ``get_code_snippet``,
+``get_architecture``); fall back to grep only when the project isn't in the graph or you need exact text.
 
-## Conoscenza in Obsidian (se configurato)
-Server MCP ``obsidian`` (vault personale): ``search-vault``/``read-note`` per ADR, decisioni, convenzioni.
+## Knowledge in Obsidian (if configured)
+MCP server ``obsidian`` (personal vault): ``search-vault``/``read-note`` for ADRs, decisions, conventions.
 
-## Selezione del modello (routing per costo)
-Default ``opusplan``. Delegando via Agent: ``haiku`` per ricerche/lookup, ``sonnet`` per impl/test,
-``opus`` per architettura/analisi profonda. La manovalanza va su modelli economici.
+## Model selection (cost-based routing)
+Default ``opusplan``. When delegating via Agent: ``haiku`` for search/lookup, ``sonnet`` for impl/tests,
+``opus`` for architecture/deep analysis. Grunt work goes to cheaper models.
 $markEnd
 "@
 if ($DryRun) {
-  Write-Host "[dry-run] scrivo/aggiorno blocco marcato in $claudeMd"
+  Write-Host "[dry-run] writing/updating marked block in $claudeMd"
 } else {
   if ((Test-Path $claudeMd) -and (Get-Content $claudeMd -Raw) -match [regex]::Escape($markBegin)) {
     $content = Get-Content $claudeMd -Raw
@@ -157,20 +157,20 @@ if ($DryRun) {
     Add-Content $claudeMd ("`n" + $block) -Encoding UTF8
   }
 }
-Ok "CLAUDE.md aggiornato"
+Ok "CLAUDE.md updated"
 
 # ===== 6) Clone framework template =====
-Say "Clono il template framework in $FrameworkDir"
+Say "Cloning the framework template into $FrameworkDir"
 if (Test-Path (Join-Path $FrameworkDir ".git")) {
-  Ok "già presente — aggiorno"
+  Ok "already present — updating"
   Run "git -C '$FrameworkDir' pull --ff-only"
 } else {
   Run "git clone --depth 1 '$RepoUrl' '$FrameworkDir'"
 }
 
-# ===== 7) (opzionale) Routine re-indexing via Task Scheduler =====
+# ===== 7) (optional) Re-indexing routine via Task Scheduler =====
 if ($WithReindexRoutine) {
-  Say "Installo la routine schedulata (Task Scheduler, 03:17)"
+  Say "Installing the scheduled routine (Task Scheduler, 03:17)"
   $scriptsDir = Join-Path $HOME ".claude\scripts"
   $logsDir    = Join-Path $HOME ".claude\logs"
   New-Item -ItemType Directory -Force $scriptsDir | Out-Null
@@ -178,29 +178,29 @@ if ($WithReindexRoutine) {
   $reindex = Join-Path $scriptsDir "reindex_codebase_memory.ps1"
   Copy-Item (Join-Path $FrameworkDir "distribution\reindex_codebase_memory.ps1") $reindex -Force
   $taskName = "AENGL Reindex"
-  # rimuovi se esiste (idempotente)
+  # remove if it exists (idempotent)
   schtasks /Query /TN $taskName 2>$null | Out-Null
   if ($LASTEXITCODE -eq 0) { Run "schtasks /Delete /TN '$taskName' /F" }
   Run "schtasks /Create /SC DAILY /ST 03:17 /TN '$taskName' /TR 'powershell -NoProfile -ExecutionPolicy Bypass -File `"$reindex`"' /RL LIMITED"
-  Ok "routine schedulata installata"
+  Ok "scheduled routine installed"
 } else {
-  Warn "Routine re-indexing non installata (riavvia con -WithReindexRoutine se la vuoi)"
+  Warn "Re-indexing routine not installed (re-run with -WithReindexRoutine if you want it)"
 }
 
-# ===== 8) Riepilogo =====
+# ===== 8) Summary =====
 Write-Host ""
 Write-Host "================================================================" -ForegroundColor White
-Write-Host "Setup completato. Cosa hai ora (riavvia Claude Code per caricare il plugin):" -ForegroundColor Green
-Write-Host "  • /spec /plan /build /test /review /ship  (agent-skills, 28 skill)"
+Write-Host "Setup complete. What you have now (restart Claude Code to load the plugin):" -ForegroundColor Green
+Write-Host "  • /spec /plan /build /test /review /ship  (agent-skills, 28 skills)"
 Write-Host "  • MCP codebase-memory   →   list_projects · search_graph · trace_path · get_architecture · ..."
 if ($WithObsidian)        { Write-Host "  • MCP obsidian        →   search-vault · read-note" }
-Write-Host "  • Modello default: opusplan (Opus in plan, Sonnet in esecuzione)"
-Write-Host "  • Regola graph-first in ~/.claude/CLAUDE.md"
+Write-Host "  • Default model: opusplan (Opus for planning, Sonnet for execution)"
+Write-Host "  • Graph-first rule in ~/.claude/CLAUDE.md"
 Write-Host "  • Framework template:    $FrameworkDir"
-if ($WithReindexRoutine)  { Write-Host "  • Routine schedulata (Task Scheduler): AENGL Reindex, 03:17" }
-if (-not $bashAvailable)  { Write-Host "  ! ATTENZIONE: senza 'bash' in PATH (Git Bash o WSL), i Claude Code hook non gireranno." -ForegroundColor Yellow }
+if ($WithReindexRoutine)  { Write-Host "  • Scheduled routine (Task Scheduler): AENGL Reindex, 03:17" }
+if (-not $bashAvailable)  { Write-Host "  ! WARNING: without 'bash' on PATH (Git Bash or WSL), Claude Code hooks will not run." -ForegroundColor Yellow }
 Write-Host ""
-Write-Host "Per attivare i 3 cordoni di enforcement su UN repo target (richiede Git Bash/WSL):" -ForegroundColor White
+Write-Host "To enable the 3 enforcement rings on ONE target repo (requires Git Bash/WSL):" -ForegroundColor White
 Write-Host "  cd <repo>"
 Write-Host "  Copy-Item `"$FrameworkDir\.github\PULL_REQUEST_TEMPLATE.md`" .github\ -Force"
 Write-Host "  Copy-Item `"$FrameworkDir\.github\workflows\non-negotiables.yml`" .github\workflows\ -Force"
@@ -208,5 +208,5 @@ Write-Host "  Copy-Item -Recurse `"$FrameworkDir\enforcement`" .\ -Force"
 Write-Host "  Copy-Item `"$FrameworkDir\enforcement\.pre-commit-config.yaml`" .pre-commit-config.yaml -Force"
 Write-Host "  pre-commit install"
 Write-Host ""
-Write-Host "Disinstall: claude plugin uninstall agent-skills · claude mcp remove codebase-memory"
+Write-Host "Uninstall: claude plugin uninstall agent-skills · claude mcp remove codebase-memory"
 Write-Host "================================================================" -ForegroundColor White

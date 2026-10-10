@@ -1,7 +1,7 @@
 <#
-Re-indicizza tutti i progetti presenti nel knowledge graph di codebase-memory-mcp.
-Equivalente Windows del reindex bash; usa la CLI nativa del binario, niente bash necessario.
-Pensato per il Task Scheduler (schedulato dall'installer ps1).
+Re-indexes every project in the codebase-memory-mcp knowledge graph.
+Windows equivalent of the bash reindex script; uses the binary's native CLI, no bash required.
+Meant for Task Scheduler (scheduled by the ps1 installer).
 #>
 $ErrorActionPreference = 'Continue'
 $bin = (Get-Command codebase-memory-mcp -ErrorAction SilentlyContinue).Source
@@ -12,14 +12,14 @@ New-Item -ItemType Directory -Force $logDir | Out-Null
 "===== reindex $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss') =====" | Add-Content $log
 
 if (-not $bin) {
-  "[error] binario non trovato — installalo con: npm i -g codebase-memory-mcp" | Add-Content $log
+  "[error] binary not found — install it with: npm i -g codebase-memory-mcp" | Add-Content $log
   exit 1
 }
 
-# Estrai i progetti
+# Extract the projects
 $raw = & $bin cli list_projects 2>$null
 $jsonLine = ($raw | Select-String '^{' | Select-Object -First 1).Line
-if (-not $jsonLine) { "[warn] nessun output JSON da list_projects" | Add-Content $log; exit 0 }
+if (-not $jsonLine) { "[warn] no JSON output from list_projects" | Add-Content $log; exit 0 }
 $projects = ($jsonLine | ConvertFrom-Json).projects
 
 foreach ($p in $projects) {

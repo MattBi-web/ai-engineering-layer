@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Companion test — ogni nuovo file sorgente "sostanziale" deve avere un test affiancato.
-# Euristico per FastAPI/React. Eccezione: file in shell/, models/, types puri, __init__.py, config.
+# Companion test — every new "substantial" source file must have a test alongside it.
+# Heuristic for FastAPI/React. Exempt: files in shell/, models/, pure types, __init__.py, config.
 set -euo pipefail
 fail=0
 files=(); while IFS= read -r _l; do files+=("$_l"); done < <(git diff --name-only --diff-filter=A origin/main...HEAD 2>/dev/null || true)
@@ -23,8 +23,8 @@ has_companion() {
 for f in ${files[@]+"${files[@]}"}; do
   is_source "$f" || continue
   if ! has_companion "$f"; then
-    echo "❌ [test] nuovo sorgente senza test affiancato: $f"; fail=1
+    echo "❌ [test] new source file without a companion test: $f"; fail=1
   fi
 done
-[ $fail -eq 0 ] && echo "✅ [test] companion test presenti" || echo "→ Aggiungi un file di test (Step 3 del protocollo). Codice senza test = incompleto."
+[ $fail -eq 0 ] && echo "✅ [test] companion tests present" || echo "→ Add a test file (Step 3 of the protocol). Code without tests = incomplete."
 exit $fail

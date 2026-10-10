@@ -1,18 +1,18 @@
 # L10 — Operations
 
-**Scopo:** quando qualcosa va storto in produzione, c'è un proprietario, una procedura e un apprendimento.
+**Purpose:** when something goes wrong in production, there is an owner, a procedure and a lesson learned.
 
-**Decisioni di default:** ogni servizio in prod ha un runbook e un owner/on-call. Incidenti classificati
-per severità. Postmortem blameless obbligatorio per SEV1/SEV2. Chaos/failure testing sui sistemi critici.
+**Default decisions:** every service in prod has a runbook and an owner/on-call. Incidents classified
+by severity. Blameless postmortem mandatory for SEV1/SEV2. Chaos/failure testing on critical systems.
 
 **Checklist:**
-- [ ] **Runbook** presente per il servizio (`governance/runbooks/`): health, alert→azione, deploy, rollback, escalation.
-- [ ] Owner / rotazione on-call definiti (coerente con CODEOWNERS, L0).
-- [ ] Severità incidenti (SEV1/2/3) e canali/tempi di escalation documentati.
-- [ ] Postmortem blameless per SEV1/SEV2 (`governance/postmortems/`), con action items tracciati e assegnati.
-- [ ] Alert azionabili (collegati a un'azione del runbook), non rumore.
-- [ ] (Sistemi critici) failure/chaos test per validare i meccanismi di resilienza (L6).
+- [ ] **Runbook** present for the service (`governance/runbooks/`): health, alert→action, deploy, rollback, escalation.
+- [ ] Owner / on-call rotation defined (consistent with CODEOWNERS, L0).
+- [ ] Incident severities (SEV1/2/3) and escalation channels/times documented.
+- [ ] Blameless postmortem for SEV1/SEV2 (`governance/postmortems/`), with action items tracked and assigned.
+- [ ] Actionable alerts (linked to a runbook action), not noise.
+- [ ] (Critical systems) failure/chaos tests to validate the resilience mechanisms (L6).
 
-**Non-Negotiable:** nessuna.
+**Non-Negotiable:** none.
 
-**Stop condition:** se un servizio sta per andare in prod senza runbook né owner, fermati: non è operabile.
+**Stop condition:** if a service is about to go to prod with neither a runbook nor an owner, stop: it is not operable.

@@ -1,19 +1,19 @@
 # L9 — Deployment & Environments
 
-**Scopo:** rilasci sicuri, reversibili e promossi attraverso ambienti, senza downtime sorpresa.
+**Purpose:** safe, reversible releases promoted through environments, with no surprise downtime.
 
-**Decisioni di default:** ambienti dev → staging → prod. Deploy automatico su push (CD). Rollback sempre
-disponibile. Feature flag per disaccoppiare deploy da release. Config per-ambiente, mai hardcoded.
+**Default decisions:** dev → staging → prod environments. Automatic deploy on push (CD). Rollback always
+available. Feature flags to decouple deploy from release. Per-environment config, never hardcoded.
 
 **Checklist:**
-- [ ] Esiste uno **staging** che rispecchia prod; il cambio passa di lì prima di prod.
-- [ ] Strategia di rilascio: canary/blue-green o almeno deploy con health-gate.
-- [ ] **Rollback** definito e testato (RTO target dichiarato, coerente con L3 backup).
-- [ ] Feature flag per funzionalità rischiose (deploy ≠ release).
-- [ ] Config via env per-ambiente; secrets da vault (NN#3); promotion dev→staging→prod tracciata.
-- [ ] Migrazioni DB compatibili col deploy (expand-contract, L3) per zero downtime.
+- [ ] A **staging** environment that mirrors prod exists; the change goes through it before prod.
+- [ ] Release strategy: canary/blue-green or at least a health-gated deploy.
+- [ ] **Rollback** defined and tested (target RTO declared, consistent with L3 backups).
+- [ ] Feature flags for risky functionality (deploy ≠ release).
+- [ ] Config via per-environment env; secrets from vault (NN#3); dev→staging→prod promotion tracked.
+- [ ] DB migrations compatible with the deploy (expand-contract, L3) for zero downtime.
 
-**Non-Negotiable:** eredita NN#3 (config/secrets per-ambiente da vault).
+**Non-Negotiable:** inherits NN#3 (per-environment config/secrets from vault).
 
-**Stop condition:** se manca un ambiente di staging o una via di rollback, fermati e segnalalo prima di
-rilasciare codice critico in produzione.
+**Stop condition:** if there is no staging environment or rollback path, stop and flag it before
+releasing critical code to production.
